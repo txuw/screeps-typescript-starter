@@ -3,10 +3,10 @@ export class Builder{
 
   // 结构类型优先级映射表，数字越小优先级越高
   structurePriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 0,
-    [STRUCTURE_EXTENSION]: 1,
-    [STRUCTURE_RAMPART]: 2,
-    [STRUCTURE_ROAD]: 3,
+    [STRUCTURE_CONTAINER]: 2,
+    [STRUCTURE_EXTENSION]: 0,
+    [STRUCTURE_RAMPART]: 3,
+    [STRUCTURE_ROAD]: 1,
     [STRUCTURE_LINK]: 4
   };
 
@@ -51,8 +51,8 @@ export class Builder{
       }
     }
     else {
-      if(this.creep.harvest(sources[1]) == ERR_NOT_IN_RANGE) {
-        this.creep.moveTo(sources[1], {visualizePathStyle: {stroke: '#ffaa00'}});
+      if(this.creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
+        this.creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
       }
     }
   }

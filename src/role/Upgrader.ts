@@ -21,8 +21,8 @@ export class Upgrader{
       }
     }
     else {
-      if(this.creep.harvest(sources[0]) === ERR_NOT_IN_RANGE) {
-        this.creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
+      if(this.creep.harvest(sources[1]) === ERR_NOT_IN_RANGE) {
+        this.creep.moveTo(sources[1], {visualizePathStyle: {stroke: '#ffaa00'}});
       }
     }
   }

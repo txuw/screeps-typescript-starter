@@ -3,6 +3,7 @@ import {CommonConstant} from "./common/CommonConstant";
 import {Builder} from "./role/Builder";
 import {Harvester} from "./role/Harvester";
 import {Upgrader} from "./role/Upgrader";
+import {CreepFactory} from "./factory/CreepFactory";
 
 declare global {
   /*
@@ -39,33 +40,20 @@ declare global {
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
-  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test1")
-  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test2")
-  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test3")
-  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test4")
-  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test5")
-  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test6")
-  if(Game.creeps["test1"]!=null){
-    Game.creeps["test1"].memory.role = CommonConstant.HARVESTER
+
+  // 使用工厂方法进行creep生产
+  const creepFactory = CreepFactory.getInstance();
+  // 使用贪心生产策略
+  const productionResult = creepFactory.greedyProduction(CommonConstant.CREEP_CONFIGS);
+  if (productionResult.success) {
+    console.log(`Successfully spawned ${productionResult.creepName}`);
+  } else if (!productionResult.error?.includes("All creep types") && !productionResult.error?.includes("busy")) {
+    console.log(`Production failed: ${productionResult.error}`);
   }
-  if(Game.creeps["test2"]!=null){
-    Game.creeps["test2"].memory.role = CommonConstant.BUILDER
-  }
-  if(Game.creeps["test3"]!=null){
-    Game.creeps["test3"].memory.role = CommonConstant.UPGRADER
-  }
-  if(Game.creeps["test4"]!=null){
-    Game.creeps["test4"].memory.role = CommonConstant.UPGRADER
-  }
-  if(Game.creeps["test5"]!=null){
-    Game.creeps["test5"].memory.role = CommonConstant.BUILDER
-  }
-  if(Game.creeps["test6"]!=null){
-    Game.creeps["test6"].memory.role = CommonConstant.BUILDER
-  }
-  let sourceList = getSourceList()
+  Game.structures
   for(var name in Game.creeps) {
     const creep = Game.creeps[name];
+    let sourceList = getSourceList(creep)
     switch (creep.memory.role){
       case CommonConstant.HARVESTER:
         const harvester = new Harvester(creep);
@@ -90,14 +78,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
   }
 });
 
-function getSourceList(){
+function getSourceList(creep:Creep){
   let SourceList:Array<Source> = [];
-
   for (let SourceId of CommonConstant.SOURCE_ID_LIST) {
     const Source = Game.getObjectById<Id<Source>>(SourceId);
     if (Source) {
       SourceList.push(Source)
     }
   }
+
   return SourceList;
 }
