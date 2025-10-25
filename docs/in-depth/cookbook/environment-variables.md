@@ -7,7 +7,7 @@ Environment variables provide a more streamlined way to manage your build proces
 Let's say that we want to set `NODE_ENV` to `production` for uploading to our main branch, and `development` for uploading to our Simulation branch. First we'll catch the environment variable and assign the compile target based on it.
 
 ```javascript
-// rollup.config.js
+// rollup.config.mjs
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -73,10 +73,10 @@ $ npm install --save-dev rollup-plugin-replace
 $ yarn add --dev rollup-plugin-replace
 ```
 
-Then configure your `rollup.config.js` to include your desired variables.
+Then configure your `rollup.config.mjs` to include your desired variables.
 
 ```javascript
-// rollup.config.js
+// rollup.config.mjs
 import replace from 'rollup-plugin-replace';
 
 export default {

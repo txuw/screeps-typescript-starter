@@ -1,4 +1,8 @@
 import { ErrorMapper } from "utils/ErrorMapper";
+import {CommonConstant} from "./common/CommonConstant";
+import {Builder} from "./role/Builder";
+import {Harvester} from "./role/Harvester";
+import {Upgrader} from "./role/Upgrader";
 
 declare global {
   /*
@@ -19,6 +23,8 @@ declare global {
     role: string;
     room: string;
     working: boolean;
+    upgrading: boolean;
+    building: boolean;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")
@@ -37,46 +43,42 @@ export const loop = ErrorMapper.wrapLoop(() => {
   Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test2")
   Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test3")
   Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test4")
+  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test5")
+  Game.spawns["Spawn1"].spawnCreep([MOVE,CARRY,WORK],"test6")
   if(Game.creeps["test1"]!=null){
-    Game.creeps["test1"].memory.role = "采集者"
+    Game.creeps["test1"].memory.role = CommonConstant.HARVESTER
   }
   if(Game.creeps["test2"]!=null){
-    Game.creeps["test2"].memory.role = "采集者"
+    Game.creeps["test2"].memory.role = CommonConstant.BUILDER
   }
   if(Game.creeps["test3"]!=null){
-    Game.creeps["test3"].memory.role = "升级者"
+    Game.creeps["test3"].memory.role = CommonConstant.UPGRADER
   }
   if(Game.creeps["test4"]!=null){
-    Game.creeps["test4"].memory.role = "升级者"
+    Game.creeps["test4"].memory.role = CommonConstant.UPGRADER
   }
-
-  for (let creepName in Game.creeps) {
-    let creep = Game.creeps[creepName];
-    if (creep.memory.role == "采集者"){
-      if(creep.store.getFreeCapacity()>0){
-        let sources = creep.room.find(FIND_SOURCES);
-        if (creep.harvest(sources[0])== ERR_NOT_IN_RANGE){
-          creep.moveTo(sources[0]);
-        }
-      }else {
-        if(creep.transfer(Game.spawns["Spawn1"],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-          creep.moveTo(Game.spawns["Spawn1"]);
-        }
-      }
-    }
-    if(creep.memory.role == "升级者"){
-      if(creep.store.getFreeCapacity()>0){
-        let sources = creep.room.find(FIND_SOURCES);
-        if (creep.harvest(sources[0])== ERR_NOT_IN_RANGE){
-          creep.moveTo(sources[0]);
-        }
-      }else {
-        if(creep.room.controller!=null){
-          if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
-            creep.moveTo(creep.room.controller);
-          }
-        }
-      }
+  if(Game.creeps["test5"]!=null){
+    Game.creeps["test5"].memory.role = CommonConstant.BUILDER
+  }
+  if(Game.creeps["test6"]!=null){
+    Game.creeps["test6"].memory.role = CommonConstant.BUILDER
+  }
+  let sourceList = getSourceList()
+  for(var name in Game.creeps) {
+    const creep = Game.creeps[name];
+    switch (creep.memory.role){
+      case CommonConstant.HARVESTER:
+        const harvester = new Harvester(creep);
+        harvester.harvest(sourceList);
+        break;
+      case CommonConstant.UPGRADER:
+        const upgrader = new Upgrader(creep);
+        upgrader.upgrade(sourceList);
+        break;
+      case CommonConstant.BUILDER:
+        const builder = new Builder(creep);
+        builder.build(sourceList)
+        break;
     }
   }
 
@@ -87,3 +89,15 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
 });
+
+function getSourceList(){
+  let SourceList:Array<Source> = [];
+
+  for (let SourceId of CommonConstant.SOURCE_ID_LIST) {
+    const Source = Game.getObjectById<Id<Source>>(SourceId);
+    if (Source) {
+      SourceList.push(Source)
+    }
+  }
+  return SourceList;
+}
