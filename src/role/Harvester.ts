@@ -11,6 +11,12 @@ export class Harvester {
     [STRUCTURE_CONTAINER]: 2
   };
 
+  // Source 分分配算法配置参数
+  private static readonly DISTANCE_FACTOR = 2.0; // 距离系数：每距离10格需要多少个额外Harvester
+  private static readonly BASE_HARVESTERS = 1; // 基础Harvester数量
+  private static readonly MIN_HARVESTERS = 1; // 最少Harvester数量
+  private static readonly MAX_HARVESTERS = 4; // 最多Harvester数量
+
   constructor(creep: Creep) {
     this.creep = creep;
   }
@@ -45,40 +51,58 @@ export class Harvester {
 
   /**
    * 分配最优的采集点
-   * 算法：选择当前 Harvester 数量最少的 Source
+   * 算法：考虑距离因素，距离远的 Source 需要更多 Harvester 来维持资源产出
    */
   private assignOptimalSource(sources: Array<Source>) {
-    var sourceStats: { [sourceId: string]: number } = {};
+    var sourceStats: { [sourceId: string]: { current: number; expected: number; distance: number } } = {};
+
+    // 找到 Spawn 位置作为距离计算基准
+    var spawnPos = this.getSpawnPosition();
 
     // 初始化统计数据
     for (var source of sources) {
-      sourceStats[source.id] = 0;
+      var distance = this.calculateDistance(spawnPos, source.pos);
+      // 期望 Harvester 数量计算公式：
+      // expected = BASE_HARVESTERS + (distance / 10) * DISTANCE_FACTOR
+      // 然后限制在 MIN_HARVESTERS 和 MAX_HARVESTERS 之间
+      var expectedHarvesters = Math.round(
+        Harvester.BASE_HARVESTERS + (distance / 10) * Harvester.DISTANCE_FACTOR
+      );
+      expectedHarvesters = Math.max(
+        Harvester.MIN_HARVESTERS,
+        Math.min(Harvester.MAX_HARVESTERS, expectedHarvesters)
+      );
+
+      sourceStats[source.id] = {
+        current: 0,
+        expected: expectedHarvesters,
+        distance: distance
+      };
     }
 
     // 统计当前各 Source 点的 Harvester 数量
     for (var creepName in Game.creeps) {
       var creep = Game.creeps[creepName];
-      if (creep.memory.role === 'harvester' && creep.memory.targetSourceId) {
-        sourceStats[creep.memory.targetSourceId] = (sourceStats[creep.memory.targetSourceId] || 0) + 1;
+      if (creep.memory.role === CommonConstant.HARVESTER && creep.memory.targetSourceId) {
+        if (sourceStats[creep.memory.targetSourceId]) {
+          sourceStats[creep.memory.targetSourceId].current++;
+        }
       }
     }
 
-    // 找到 Harvester 数量最少的 Source
+    // 找到最需要 Harvester 的 Source
     var optimalSource = sources[0];
-    var minHarvesters = sourceStats[optimalSource.id];
+    var maxDeficit = this.calculateDeficit(sourceStats[optimalSource.id]);
 
     for (var i = 1; i < sources.length; i++) {
-      var currentHarvesters = sourceStats[sources[i].id];
+      var currentDeficit = this.calculateDeficit(sourceStats[sources[i].id]);
 
-      if (currentHarvesters < minHarvesters) {
+      if (currentDeficit > maxDeficit) {
         optimalSource = sources[i];
-        minHarvesters = currentHarvesters;
-      } else if (currentHarvesters === minHarvesters) {
-        // 如果数量相同，选择距离更近的
-        var currentDistance = Math.abs(this.creep.pos.x - sources[i].pos.x) + Math.abs(this.creep.pos.y - sources[i].pos.y);
-        var optimalDistance = Math.abs(this.creep.pos.x - optimalSource.pos.x) + Math.abs(this.creep.pos.y - optimalSource.pos.y);
-
-        if (currentDistance < optimalDistance) {
+        maxDeficit = currentDeficit;
+      } else if (currentDeficit === maxDeficit) {
+        // 如果缺口相同，选择距离 Spawn 更近的（优先发展近距离资源）
+        if (sourceStats[sources[i].id].distance < sourceStats[optimalSource.id].distance) {
           optimalSource = sources[i];
         }
       }
@@ -86,7 +110,39 @@ export class Harvester {
 
     // 分配最优采集点
     this.creep.memory.targetSourceId = optimalSource.id;
-    console.log(`Harvester ${this.creep.name} assigned to source ${optimalSource.id}`);
+    var stat = sourceStats[optimalSource.id];
+    console.log(`Harvester ${this.creep.name} assigned to source ${optimalSource.id} (distance: ${stat.distance}, current: ${stat.current}, expected: ${stat.expected})`);
+  }
+
+  /**
+   * 获取 Spawn 位置
+   */
+  private getSpawnPosition(): RoomPosition {
+    // 寻找第一个可用的 Spawn
+    for (var spawnName in Game.spawns) {
+      var spawn = Game.spawns[spawnName];
+      if (spawn && spawn.pos) {
+        return spawn.pos;
+      }
+    }
+
+    // 如果没有 Spawn，使用当前 creep 的位置作为备选
+    return this.creep.pos;
+  }
+
+  /**
+   * 计算两个位置之间的曼哈顿距离
+   */
+  private calculateDistance(pos1: RoomPosition, pos2: RoomPosition): number {
+    return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+  }
+
+  /**
+   * 计算 Harvester 缺口数量
+   * 正数表示缺少 Harvester，负数表示 Harvester 过剩
+   */
+  private calculateDeficit(stat: { current: number; expected: number; distance: number }): number {
+    return stat.expected - stat.current;
   }
 
   /**
@@ -107,7 +163,7 @@ export class Harvester {
     }
   }
 
-  
+
   /**
    * 转移能量到最近的 Container
    */
