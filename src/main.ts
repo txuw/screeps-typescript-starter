@@ -3,6 +3,7 @@ import {CommonConstant} from "./common/CommonConstant";
 import {Builder} from "./role/Builder";
 import {Harvester} from "./role/Harvester";
 import {Upgrader} from "./role/Upgrader";
+import {Carry} from "./role/Carry";
 import {CreepFactory} from "./factory/CreepFactory";
 
 declare global {
@@ -26,6 +27,7 @@ declare global {
     working: boolean;
     upgrading: boolean;
     building: boolean;
+    targetSourceId?: string;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")
@@ -58,6 +60,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       case CommonConstant.HARVESTER:
         const harvester = new Harvester(creep);
         harvester.harvest(sourceList);
+        break;
+      case CommonConstant.CARRY:
+        const carry = new Carry(creep);
+        carry.transport(sourceList);
         break;
       case CommonConstant.UPGRADER:
         const upgrader = new Upgrader(creep);

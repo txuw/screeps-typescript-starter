@@ -90,7 +90,8 @@ export class CreepFactory {
         room: spawn.room.name,
         working: false,
         upgrading: false,
-        building: false
+        building: false,
+        targetSourceId: undefined
       }
     });
 
