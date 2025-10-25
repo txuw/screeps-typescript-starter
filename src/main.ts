@@ -5,6 +5,7 @@ import {Harvester} from "./role/Harvester";
 import {Upgrader} from "./role/Upgrader";
 import {Carry} from "./role/Carry";
 import {CreepFactory} from "./factory/CreepFactory";
+import {TowerManager} from "./manager/TowerManager";
 
 declare global {
   /*
@@ -74,6 +75,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
         builder.build(sourceList)
         break;
     }
+  }
+
+  // 塔管理逻辑
+  if (CommonConstant.TOWER_ENABLED) {
+    const towerManager = TowerManager.getInstance();
+    towerManager.manageRoomTowers(CommonConstant.TOWER_ROOM_NAME);
   }
 
   // Automatically delete memory of missing creeps
