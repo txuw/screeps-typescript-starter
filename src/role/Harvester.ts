@@ -1,4 +1,5 @@
 import { CommonConstant } from "../common/CommonConstant";
+import { CreepUtils } from "../utils/CreepUtils";
 
 export class Harvester {
   creep: Creep
@@ -95,7 +96,7 @@ export class Harvester {
    */
   private transferEnergy() {
     // 检查是否存在 Carry 角色
-    var hasCarry = this.checkHasCarry();
+    var hasCarry = CreepUtils.hasCarry();
 
     if (hasCarry) {
       // 有 Carry 角色时，只转移到 Container
@@ -106,19 +107,7 @@ export class Harvester {
     }
   }
 
-  /**
-   * 检查是否存在 Carry 角色
-   */
-  private checkHasCarry(): boolean {
-    for (var creepName in Game.creeps) {
-      var creep = Game.creeps[creepName];
-      if (creep.memory.role === CommonConstant.CARRY) {
-        return true;
-      }
-    }
-    return false;
-  }
-
+  
   /**
    * 转移能量到最近的 Container
    */

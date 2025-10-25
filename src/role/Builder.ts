@@ -1,5 +1,7 @@
-export class Builder{
-  creep:Creep
+import { CreepUtils } from "../utils/CreepUtils";
+
+export class Builder {
+  creep: Creep
 
   // 结构类型优先级映射表，数字越小优先级越高
   structurePriority: { [key: string]: number } = {
@@ -10,25 +12,29 @@ export class Builder{
     [STRUCTURE_LINK]: 4
   };
 
+  // 存储结构优先级映射表（用于获取资源），数字越小优先级越高
+  storagePriority: { [key: string]: number } = {
+    [STRUCTURE_CONTAINER]: 0,
+    [STRUCTURE_STORAGE]: 1
+  };
+
   constructor(creep: Creep) {
     this.creep = creep;
   }
 
-  build(sources:Array<Source>){
-    if(this.creep.memory.building && this.creep.store.getUsedCapacity() == 0) {
+  build(sources: Array<Source>) {
+    if (this.creep.memory.building && this.creep.store.getUsedCapacity() == 0) {
       this.creep.memory.building = false;
       this.creep.say('🔄 harvest');
     }
-    if(!this.creep.memory.building && this.creep.store.getUsedCapacity() == this.creep.store.getCapacity()) {
+    if (!this.creep.memory.building && this.creep.store.getUsedCapacity() == this.creep.store.getCapacity()) {
       this.creep.memory.building = true;
       this.creep.say('🚧 build');
     }
 
-    if(this.creep.memory.building) {
+    if (this.creep.memory.building) {
       var targets = this.creep.room.find(FIND_CONSTRUCTION_SITES);
-      if(targets.length) {
-
-
+      if (targets.length) {
 
         targets.sort((a, b) => {
           // 获取类型优先级，未定义的类型优先级为Infinity
@@ -45,15 +51,34 @@ export class Builder{
           const b_distance = Math.abs(this.creep.pos.x - b.pos.x) + Math.abs(this.creep.pos.y - b.pos.y);
           return a_distance - b_distance;
         })
-        if(this.creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-          this.creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
+        if (this.creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+          this.creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
         }
       }
     }
     else {
-      if(this.creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-        this.creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
+      this.getResources(sources);
+    }
+  }
+
+  /**
+   * 获取资源
+   * 如果存在 Carry，从存储容器获取
+   * 否则直接从 Source 采集
+   */
+  private getResources(sources: Array<Source>) {
+    var hasCarry = CreepUtils.hasCarry();
+
+    if (hasCarry) {
+      // 有 Carry 角色时，从存储容器获取资源
+      var success = CreepUtils.withdrawFromStorage(this.creep, this.storagePriority, { stroke: '#ffaa00' });
+      if (!success) {
+        // 如果没有可用的存储结构，回退到直接采集
+        CreepUtils.harvestFromSource(this.creep, sources, 0, { stroke: '#ffaa00' });
       }
+    } else {
+      // 没有 Carry 角色时，直接从 Source 采集
+      CreepUtils.harvestFromSource(this.creep, sources, 0, { stroke: '#ffaa00' });
     }
   }
 }
