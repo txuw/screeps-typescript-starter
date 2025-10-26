@@ -15,8 +15,8 @@ export class TowerManager {
     this.config = {
       allyOwners: ["txuw"],
       repairThresholds: {
-        [STRUCTURE_WALL]: 0.000004, // 1W血
-        [STRUCTURE_RAMPART]: 0.2,
+        [STRUCTURE_WALL]: 0.00004, // 1W血
+        [STRUCTURE_RAMPART]: 0.01,
         [STRUCTURE_TOWER]: 0.5,
         [STRUCTURE_CONTAINER]: 0.7,
         [STRUCTURE_STORAGE]: 0.8,

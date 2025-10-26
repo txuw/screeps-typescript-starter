@@ -5,7 +5,7 @@ export class CommonConstant{
   static BUILDER_NEED_LENGTH = 0;
   static UPGRADER_NEED_LENGTH = 2;
   static CARRY_NEED_LENGTH = 1;
-  static CONTAINER_CARRY_NEED_LENGTH = 3;
+  static CONTAINER_CARRY_NEED_LENGTH = 2;
   static STORAGE_CARRY_NEED_LENGTH = 1;
   static HARVESTER = 'harvester';
   static UPGRADER = 'upgrader';
@@ -50,25 +50,25 @@ export class CommonConstant{
     },
     {
       role: CommonConstant.CONTAINER_CARRY,
-      bodyParts: [MOVE,MOVE, MOVE, MOVE, MOVE, MOVE,MOVE, MOVE,  CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK],
+      bodyParts: [MOVE,MOVE, MOVE, MOVE, MOVE, MOVE,MOVE, MOVE,  CARRY, CARRY, CARRY, CARRY, CARRY,  CARRY, CARRY, CARRY,  CARRY, CARRY],
       maxCount: CommonConstant.CONTAINER_CARRY_NEED_LENGTH,
       priority: 1 // 最高优先级，确保Container到Storage的物流
     },
     {
       role: CommonConstant.STORAGE_CARRY,
-      bodyParts: [MOVE,MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK],
+      bodyParts: [MOVE,MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
       maxCount: CommonConstant.STORAGE_CARRY_NEED_LENGTH,
-      priority: 5 // 较低优先级，在Storage建成后再生产
+      priority: 4 // 较低优先级，在Storage建成后再生产
     },
     {
       role: CommonConstant.CARRY,  // 基础搬运工，进行容错
       bodyParts: [MOVE,CARRY,WORK],
       maxCount: CommonConstant.CARRY_NEED_LENGTH,
-      priority: 1 // 最高优先级，
+      priority: 0 // 最高优先级，
     },
     {
       role: CommonConstant.UPGRADER,
-      bodyParts: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK , WORK, WORK],
+      bodyParts: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK , WORK, WORK],
       maxCount: CommonConstant.UPGRADER_NEED_LENGTH,
       priority: 3
     },
@@ -76,7 +76,7 @@ export class CommonConstant{
       role: CommonConstant.BUILDER,
       bodyParts: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY , CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
       maxCount: CommonConstant.BUILDER_NEED_LENGTH,
-      priority: 4
+      priority: 5
     }
   ];
 }

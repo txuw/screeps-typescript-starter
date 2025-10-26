@@ -67,10 +67,10 @@ export class WaitingPositionManager {
       creep.say(`🚶 to waiting`);
     } else if (moveResult === ERR_NO_PATH) {
       creep.say('❌ no path');
-      console.log(`WaitingPositionManager: No path to waiting position`);
+      // console.log(`WaitingPositionManager: No path to waiting position`);
     } else if (moveResult === ERR_INVALID_TARGET) {
       creep.say('❌ invalid pos');
-      console.log(`WaitingPositionManager: Invalid waiting position`);
+      // console.log(`WaitingPositionManager: Invalid waiting position`);
     }
 
     return moveResult === OK || moveResult === ERR_TIRED;
@@ -161,6 +161,6 @@ export class WaitingPositionManager {
       message += ` - ${additionalInfo}`;
     }
 
-    console.log(message);
+    // console.log(message);
   }
 }

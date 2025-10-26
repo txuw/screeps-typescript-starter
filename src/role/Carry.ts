@@ -7,8 +7,8 @@ export class Carry {
 
   // 能量存储结构优先级映射表（withdraw目标），数字越小优先级越高
   withdrawPriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 0,
-    [STRUCTURE_STORAGE]: 1
+    [STRUCTURE_CONTAINER]: 1,
+    [STRUCTURE_STORAGE]: 0
   };
 
   // 能量接收建筑优先级映射表（transfer目标），数字越小优先级越高
@@ -43,20 +43,20 @@ export class Carry {
 
   private performWithdraw() {
     // 获取固定分配的container
-    const assignedContainer = this.getAssignedContainer();
-
-    if (assignedContainer) {
-      // 检查container是否有能量
-      if (assignedContainer.store[RESOURCE_ENERGY] > 0) {
-        // 有能量，尝试提取
-        this.tryWithdrawFromContainer(assignedContainer);
-      } else {
-        // container为空，Carry处于空闲状态
-        CarryUtils.smartWaiting(this.creep, true , '💤 no containers', `Carry ${this.creep.name} no available containers found`);
-        console.log(`Carry ${this.creep.name} is waiting for container ${assignedContainer.id} to be filled`);
-      }
-      return;
-    }
+    // const assignedContainer = this.getAssignedContainer();
+    //
+    // if (assignedContainer) {
+    //   // 检查container是否有能量
+    //   if (assignedContainer.store[RESOURCE_ENERGY] > 0) {
+    //     // 有能量，尝试提取
+    //     this.tryWithdrawFromContainer(assignedContainer);
+    //   } else {
+    //     // container为空，Carry处于空闲状态
+    //     CarryUtils.smartWaiting(this.creep, true , '💤 no containers', `Carry ${this.creep.name} no available containers found`);
+    //     console.log(`Carry ${this.creep.name} is waiting for container ${assignedContainer.id} to be filled`);
+    //   }
+    //   return;
+    // }
 
     // 如果没有分配的container，尝试寻找其他有能量的存储结构
     const targets = this.findAvailableStorageStructures();
@@ -266,9 +266,9 @@ export class Carry {
     return this.creep.room.find(FIND_STRUCTURES, {
       filter: structure => {
         // 排除Container，因为Container通过轮询策略处理
-        if (structure.structureType === STRUCTURE_CONTAINER) {
-          return false;
-        }
+        // if (structure.structureType === STRUCTURE_CONTAINER) {
+        //   return false;
+        // }
 
         // 只考虑有存储容量且有能量的结构
         if ("store" in structure) {
