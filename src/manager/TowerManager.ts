@@ -15,7 +15,7 @@ export class TowerManager {
     this.config = {
       allyOwners: ["txuw"],
       repairThresholds: {
-        [STRUCTURE_WALL]: 0.3,
+        [STRUCTURE_WALL]: 0.000004, // 1W血
         [STRUCTURE_RAMPART]: 0.2,
         [STRUCTURE_TOWER]: 0.5,
         [STRUCTURE_CONTAINER]: 0.7,
@@ -155,7 +155,7 @@ export class TowerManager {
         }
 
         // 获取修复阈值
-        const threshold = this.config.repairThresholds[structure.structureType] || 0.8;
+        const threshold = this.config.repairThresholds[structure.structureType] || 0.1;
         const healthRatio = structure.hits / structure.hitsMax;
 
         return healthRatio < threshold;
