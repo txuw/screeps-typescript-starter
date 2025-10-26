@@ -16,7 +16,7 @@ export class TowerManager {
       allyOwners: ["txuw"],
       repairThresholds: {
         [STRUCTURE_WALL]: 0.3,
-        [STRUCTURE_RAMPART]: 0.1,
+        [STRUCTURE_RAMPART]: 0.2,
         [STRUCTURE_TOWER]: 0.5,
         [STRUCTURE_CONTAINER]: 0.7,
         [STRUCTURE_STORAGE]: 0.8,
@@ -43,8 +43,8 @@ export class TowerManager {
         [STRUCTURE_LAB]: 7,          // 实验室
         [STRUCTURE_LINK]: 8,         // 链接
         [STRUCTURE_CONTAINER]: 9,    // 容器
-        [STRUCTURE_RAMPART]: 10,     // 防御墙
-        [STRUCTURE_ROAD]: 11,        // 路
+        [STRUCTURE_RAMPART]: 11,     // 防御墙
+        [STRUCTURE_ROAD]: 10,        // 路
         [STRUCTURE_EXTRACTOR]: 12,   // 采集器
         [STRUCTURE_OBSERVER]: 13,     // 观察者
       },

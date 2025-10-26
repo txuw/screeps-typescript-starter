@@ -1,10 +1,10 @@
 import { CreepConfig } from "../types/CreepConfig";
 
 export class CommonConstant{
-  static HARVESTER_NEED_LENGTH = 7;
+  static HARVESTER_NEED_LENGTH = 2;
   static BUILDER_NEED_LENGTH = 0;
-  static UPGRADER_NEED_LENGTH = 1;
-  static CARRY_NEED_LENGTH = 1;
+  static UPGRADER_NEED_LENGTH = 2;
+  static CARRY_NEED_LENGTH = 3;
   static HARVESTER = 'harvester';
   static UPGRADER = 'upgrader';
   static BUILDER = 'builder';
@@ -22,15 +22,15 @@ export class CommonConstant{
   static CREEP_CONFIGS: CreepConfig[] = [
     {
       role: CommonConstant.HARVESTER,
-      bodyParts: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK],
+      bodyParts: [ MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
       maxCount: CommonConstant.HARVESTER_NEED_LENGTH,
-      priority: 1 // 最高优先级
+      priority: 2 // 最高优先级
     },
     {
       role: CommonConstant.CARRY,
-      bodyParts: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK],
+      bodyParts: [MOVE,MOVE, MOVE, MOVE, MOVE, MOVE,MOVE, MOVE,  CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK],
       maxCount: CommonConstant.CARRY_NEED_LENGTH,
-      priority: 2
+      priority: 1
     },
     {
       role: CommonConstant.UPGRADER,
@@ -40,13 +40,13 @@ export class CommonConstant{
     },
     // {
     //   role: CommonConstant.UPGRADER,
-    //   bodyParts: [MOVE, MOVE,  CARRY, CARRY, WORK, WORK],
+    //   bodyParts: [MOVE, MOVE,  CARRY, CARRY, WORK, WORK, CARRY, WORK],
     //   maxCount: CommonConstant.UPGRADER_NEED_LENGTH,
     //   priority: 3
     // },
     {
       role: CommonConstant.BUILDER,
-      bodyParts: [MOVE, MOVE, MOVE, CARRY , CARRY, CARRY, WORK,  WORK, WORK, WORK, WORK],
+      bodyParts: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY , CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
       maxCount: CommonConstant.BUILDER_NEED_LENGTH,
       priority: 4
     }

@@ -5,17 +5,18 @@ export class Builder {
 
   // 结构类型优先级映射表，数字越小优先级越高
   structurePriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 2,
+    [STRUCTURE_CONTAINER]: 1,
     [STRUCTURE_EXTENSION]: 0,
-    [STRUCTURE_RAMPART]: 3,
-    [STRUCTURE_ROAD]: 1,
-    [STRUCTURE_LINK]: 4
+    [STRUCTURE_RAMPART]: 4,
+    [STRUCTURE_ROAD]: 3,
+    [STRUCTURE_LINK]: 5,
+    [STRUCTURE_TOWER]: 2
   };
 
   // 存储结构优先级映射表（用于获取资源），数字越小优先级越高
   storagePriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 0,
-    [STRUCTURE_STORAGE]: 1
+    [STRUCTURE_CONTAINER]: 1,
+    [STRUCTURE_STORAGE]: 0
   };
 
   constructor(creep: Creep) {

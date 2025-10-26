@@ -12,7 +12,7 @@ export class Harvester {
   };
 
   // Source 分分配算法配置参数
-  private static readonly DISTANCE_FACTOR = 2.0; // 距离系数：每距离10格需要多少个额外Harvester
+  private static readonly DISTANCE_FACTOR = 2.5; // 距离系数：每距离10格需要多少个额外Harvester
   private static readonly BASE_HARVESTERS = 1; // 基础Harvester数量
   private static readonly MIN_HARVESTERS = 1; // 最少Harvester数量
   private static readonly MAX_HARVESTERS = 4; // 最多Harvester数量

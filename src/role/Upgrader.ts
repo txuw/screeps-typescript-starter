@@ -5,8 +5,8 @@ export class Upgrader {
 
   // 存储结构优先级映射表（用于获取资源），数字越小优先级越高
   storagePriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 0,
-    [STRUCTURE_STORAGE]: 1
+    [STRUCTURE_CONTAINER]: 1,
+    [STRUCTURE_STORAGE]: 0
   };
 
   constructor(creep: Creep) {

@@ -11,7 +11,8 @@ export class Carry {
   transferPriority: { [key: string]: number } = {
     [STRUCTURE_SPAWN]: 0,
     [STRUCTURE_EXTENSION]: 1,
-    [STRUCTURE_TOWER]: 2
+    [STRUCTURE_TOWER]: 2,
+    [STRUCTURE_STORAGE]: 3
   };
 
   constructor(creep: Creep) {
