@@ -21,7 +21,7 @@ export class CreepUtils {
    * @returns 是否存在 Carry 角色
    */
   static hasCarry(): boolean {
-    return this.hasRole(CommonConstant.CARRY);
+    return this.hasRole(CommonConstant.CARRY) || this.hasRole(CommonConstant.CONTAINER_CARRY)  ;
   }
 
   /**

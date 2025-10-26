@@ -4,8 +4,12 @@ import {Builder} from "./role/Builder";
 import {Harvester} from "./role/Harvester";
 import {Upgrader} from "./role/Upgrader";
 import {Carry} from "./role/Carry";
+import {ContainerCarry} from "./role/ContainerCarry";
+import {StorageCarry} from "./role/StorageCarry";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
+import {SourceUtils} from "./utils/SourceUtils";
+import {GameCacheManager} from "./utils/GameCacheManager";
 
 declare global {
   /*
@@ -29,6 +33,11 @@ declare global {
     upgrading: boolean;
     building: boolean;
     targetSourceId?: string;
+    targetContainerId?: string;
+  }
+
+  interface RoomMemory {
+    containerRoundRobinIndex?: number;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")
@@ -44,6 +53,9 @@ declare global {
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
+  // 清理过期缓存
+  GameCacheManager.cleanupExpiredCache();
+
   // 使用工厂方法进行creep生产
   const creepFactory = CreepFactory.getInstance();
   // 使用贪心生产策略
@@ -56,23 +68,38 @@ export const loop = ErrorMapper.wrapLoop(() => {
   Game.structures
   for(var name in Game.creeps) {
     const creep = Game.creeps[name];
-    let sourceList = getSourceList(creep)
     switch (creep.memory.role){
       case CommonConstant.HARVESTER:
         const harvester = new Harvester(creep);
-        harvester.harvest(sourceList);
+        // Harvester现在可以动态获取sources，不再需要传入参数
+        harvester.harvest();
+        break;
+      case CommonConstant.CONTAINER_CARRY:
+        const containerCarry = new ContainerCarry(creep);
+        // ContainerCarry负责Container到Storage的物流
+        containerCarry.transport();
+        break;
+      case CommonConstant.STORAGE_CARRY:
+        const storageCarry = new StorageCarry(creep);
+        // StorageCarry负责Storage到各个建筑的能量分配
+        storageCarry.transport();
         break;
       case CommonConstant.CARRY:
         const carry = new Carry(creep);
-        carry.transport(sourceList);
+        // 保留原有Carry逻辑作为备用
+        carry.transport();
         break;
       case CommonConstant.UPGRADER:
         const upgrader = new Upgrader(creep);
-        upgrader.upgrade(sourceList);
+        // 获取当前房间的sources用于upgrader
+        const sourcesForUpgrader = SourceUtils.getRoomSources(creep.room);
+        upgrader.upgrade(sourcesForUpgrader);
         break;
       case CommonConstant.BUILDER:
         const builder = new Builder(creep);
-        builder.build(sourceList)
+        // 获取当前房间的sources用于builder
+        const sourcesForBuilder = SourceUtils.getRoomSources(creep.room);
+        builder.build(sourcesForBuilder);
         break;
     }
   }
@@ -91,14 +118,3 @@ export const loop = ErrorMapper.wrapLoop(() => {
   }
 });
 
-function getSourceList(creep:Creep){
-  let SourceList:Array<Source> = [];
-  for (let SourceId of CommonConstant.SOURCE_ID_LIST) {
-    const Source = Game.getObjectById<Id<Source>>(SourceId);
-    if (Source) {
-      SourceList.push(Source)
-    }
-  }
-
-  return SourceList;
-}
