@@ -39,7 +39,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.UPGRADER,
         body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-        maxCount: 1,
+        maxCount: 2,
         priority: 3,
         needLength: 1,
     },
@@ -69,7 +69,7 @@ const w1n1Config = createRoomConfig('W1N1', {
             [RoomState.DEVELOPING]: {
                 creepConfigs: W1N1_CREEP_CONFIGS.map(config => {
                     if (config.role === ROLE_NAMES.BUILDER) {
-                        return { ...config, maxCount: 6 }; // 发展状态增加建造者
+                        return { ...config, maxCount: 2 }; // 发展状态增加建造者
                     }
                     return config;
                 }),
