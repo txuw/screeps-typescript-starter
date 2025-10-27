@@ -1,4 +1,4 @@
-import { CommonConstant } from "../common/CommonConstant";
+import { GLOBAL_ALGORITHM_CONFIG } from "../config/GlobalConstants";
 
 /**
  * 缓存数据接口
@@ -22,7 +22,7 @@ export class GameCacheManager {
    * @param data 要缓存的数据
    */
   static setCache<T>(key: string, data: T): void {
-    if (!CommonConstant.ENABLE_GLOBAL_CACHE) {
+    if (!GLOBAL_ALGORITHM_CONFIG.GLOBAL_CACHE_ENABLED) {
       return;
     }
 
@@ -39,7 +39,7 @@ export class GameCacheManager {
    * @returns 缓存的数据，如果不存在或已过期则返回null
    */
   static getCache<T>(key: string): T | null {
-    if (!CommonConstant.ENABLE_GLOBAL_CACHE) {
+    if (!GLOBAL_ALGORITHM_CONFIG.GLOBAL_CACHE_ENABLED) {
       return null;
     }
 
@@ -49,7 +49,7 @@ export class GameCacheManager {
     }
 
     // 检查缓存是否过期
-    if (Game.time - cached.tick > CommonConstant.CACHE_DURATION) {
+    if (Game.time - cached.tick > GLOBAL_ALGORITHM_CONFIG.DEFAULT_CACHE_DURATION) {
       this.removeCache(key);
       return null;
     }
@@ -80,7 +80,7 @@ export class GameCacheManager {
     const expiredKeys: string[] = [];
 
     for (const key in this.cache) {
-      if (currentTick - this.cache[key].tick > CommonConstant.CACHE_DURATION) {
+      if (currentTick - this.cache[key].tick > GLOBAL_ALGORITHM_CONFIG.DEFAULT_CACHE_DURATION) {
         expiredKeys.push(key);
       }
     }
@@ -248,7 +248,7 @@ export class GameCacheManager {
     let expiredEntries = 0;
 
     for (const key in this.cache) {
-      if (currentTick - this.cache[key].tick > CommonConstant.CACHE_DURATION) {
+      if (currentTick - this.cache[key].tick > GLOBAL_ALGORITHM_CONFIG.DEFAULT_CACHE_DURATION) {
         expiredEntries++;
       }
     }

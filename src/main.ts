@@ -1,5 +1,4 @@
 import { ErrorMapper } from "utils/ErrorMapper";
-import {CommonConstant} from "./common/CommonConstant";
 import {Builder} from "./role/Builder";
 import {Harvester} from "./role/Harvester";
 import {Upgrader} from "./role/Upgrader";
@@ -10,41 +9,178 @@ import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {SourceUtils} from "./utils/SourceUtils";
 import {GameCacheManager} from "./utils/GameCacheManager";
+import { ConfigLoader } from "./config/ConfigLoader";
+import { RoomManager } from "./manager/RoomManager";
+import { ROLE_NAMES } from "./config/GlobalConstants";
+import "./types/GlobalTypes"; // 导入扩展的全局类型定义
 
 declare global {
-  /*
-    Example types, expand on these or remove them and add your own.
-    Note: Values, properties defined here do no fully *exist* by this type definiton alone.
-          You must also give them an implemention if you would like to use them. (ex. actually setting a `role` property in a Creeps memory)
-
-    Types added in this `global` block are in an ambient, global context. This is needed because `main.ts` is a module file (uses import or export).
-    Interfaces matching on name from @types/screeps will be merged. This is how you can extend the 'built-in' interfaces from @types/screeps.
-  */
-  // Memory extension samples
-  interface Memory {
-    uuid: number;
-    log: any;
-  }
-
-  interface CreepMemory {
-    role: string;
-    room: string;
-    working: boolean;
-    upgrading: boolean;
-    building: boolean;
-    targetSourceId?: string;
-    targetContainerId?: string;
-  }
-
-  interface RoomMemory {
-    containerRoundRobinIndex?: number;
-  }
-
-  // Syntax for adding proprties to `global` (ex "global.log")
   namespace NodeJS {
     interface Global {
       log: any;
     }
+  }
+}
+
+// 全局变量
+let configLoader: ConfigLoader;
+let roomManagers: { [roomName: string]: RoomManager } = {};
+
+/**
+ * 智能生产决策函数
+ * 根据房间状态和creep数量决定是否需要生产creep
+ */
+function shouldProduceCreeps(roomManager: RoomManager): boolean {
+  const roomStatus = roomManager.getRoomStatus();
+  const roomState = roomStatus.state;
+  const rcl = roomStatus.rcl;
+
+  // 基础检查：确保有最基本的creep
+  const needsHarvester = roomManager.needsCreepProduction('harvester');
+
+  // 紧急状态：只生产采集者保证基本运转
+  if (roomState === 'emergency') {
+    return needsHarvester;
+  }
+
+  // 低能量状态：优先保证采集和运输
+  if (roomState === 'low_energy') {
+    return needsHarvester ||
+           roomManager.needsCreepProduction('carry') ||
+           roomManager.needsCreepProduction('containerCarry');
+  }
+
+  // 攻击状态：优先保证基本运转，暂停建造
+  if (roomState === 'under_attack') {
+    return needsHarvester ||
+           roomManager.needsCreepProduction('upgrader') ||
+           roomManager.needsCreepProduction('carry');
+  }
+
+  // 发展状态：需要所有类型的creep
+  if (roomState === 'developing') {
+    return needsHarvester ||
+           roomManager.needsCreepProduction('builder') ||
+           roomManager.needsCreepProduction('upgrader') ||
+           roomManager.needsCreepProduction('carry') ||
+           roomManager.needsCreepProduction('containerCarry');
+  }
+
+  // 正常状态：根据RCL决定生产策略
+  if (roomState === 'normal') {
+    if (rcl <= 3) {
+      // 早期RCL：重点采集和升级
+      return needsHarvester ||
+             roomManager.needsCreepProduction('upgrader') ||
+             roomManager.needsCreepProduction('carry');
+    } else if (rcl <= 6) {
+      // 中期RCL：平衡发展
+      return needsHarvester ||
+             roomManager.needsCreepProduction('builder') ||
+             roomManager.needsCreepProduction('upgrader') ||
+             roomManager.needsCreepProduction('carry') ||
+             roomManager.needsCreepProduction('containerCarry');
+    } else {
+      // 高级RCL：全面发展
+      return needsHarvester ||
+             roomManager.needsCreepProduction('builder') ||
+             roomManager.needsCreepProduction('upgrader') ||
+             roomManager.needsCreepProduction('carry') ||
+             roomManager.needsCreepProduction('containerCarry') ||
+             roomManager.needsCreepProduction('storageCarry');
+    }
+  }
+
+  // 默认：如果需要采集者就生产
+  return needsHarvester;
+}
+
+// 初始化函数
+function initializeGame(): void {
+  console.log('[Main] 初始化游戏配置...');
+
+  // 初始化配置加载器
+  configLoader = ConfigLoader.getInstance();
+  configLoader.initialize();
+
+  // 初始化全局房间管理器状态
+  if (!Memory.globalRoomManager) {
+    Memory.globalRoomManager = {
+      initialized: true,
+      enabledRooms: [],
+      lastGlobalUpdate: Game.time,
+    };
+  }
+
+  console.log('[Main] 游戏初始化完成');
+}
+
+// 获取或创建房间管理器
+function getRoomManager(roomName: string): RoomManager | null {
+  if (!configLoader) {
+    return null;
+  }
+
+  // 检查缓存
+  if (roomManagers[roomName]) {
+    return roomManagers[roomName];
+  }
+
+  // 获取房间对象
+  const room = Game.rooms[roomName];
+  if (!room) {
+    return null;
+  }
+
+  // 获取房间配置
+  const config = configLoader.getRoomConfig(roomName, room);
+  if (!config.enabled) {
+    return null;
+  }
+
+  // 创建房间管理器
+  const roomManager = new RoomManager(room, config);
+  roomManagers[roomName] = roomManager;
+
+  // 更新全局状态
+  if (Memory.globalRoomManager && !Memory.globalRoomManager.enabledRooms.includes(roomName)) {
+    Memory.globalRoomManager.enabledRooms.push(roomName);
+  }
+
+  console.log(`[Main] 已创建房间管理器: ${roomName}`);
+  return roomManager;
+}
+
+// 运行房间管理器
+function runRoomManager(roomName: string): void {
+  const roomManager = getRoomManager(roomName);
+  if (!roomManager) {
+    return;
+  }
+
+  // 更新房间状态
+  roomManager.updateRoomStatus();
+
+  // 生产creep - 智能生产策略
+  const creepFactory = CreepFactory.getInstance();
+  const creepConfigs = roomManager.getCurrentCreepConfigs();
+
+  // 智能生产决策：检查是否需要生产creep
+  if (shouldProduceCreeps(roomManager)) {
+    const productionResult = creepFactory.greedyProduction(creepConfigs);
+
+    if (productionResult.success) {
+      console.log(`[${roomName}] Successfully spawned ${productionResult.creepName} (${roomManager.getCurrentState()})`);
+    } else if (!productionResult.error?.includes("All creep types") && !productionResult.error?.includes("busy")) {
+      console.log(`[${roomName}] Production failed: ${productionResult.error}`);
+    }
+  }
+
+  // 运行塔防
+  const towerConfig = roomManager.getConfig().towerConfig;
+  if (towerConfig.enabled) {
+    const towerManager = TowerManager.getInstance();
+    towerManager.manageRoomTowers(roomName);
   }
 }
 
@@ -53,68 +189,91 @@ declare global {
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
+  // 初始化游戏（首次运行）
+  if (!configLoader) {
+    initializeGame();
+  }
+
   // 清理过期缓存
   GameCacheManager.cleanupExpiredCache();
 
-  // 使用工厂方法进行creep生产
-  const creepFactory = CreepFactory.getInstance();
-  // 使用贪心生产策略
-  const productionResult = creepFactory.greedyProduction(CommonConstant.CREEP_CONFIGS);
-  if (productionResult.success) {
-    console.log(`Successfully spawned ${productionResult.creepName}`);
-  } else if (!productionResult.error?.includes("All creep types") && !productionResult.error?.includes("busy")) {
-    console.log(`Production failed: ${productionResult.error}`);
+  // 运行所有启用的房间管理器
+  const enabledRooms = Memory.globalRoomManager?.enabledRooms || [];
+  for (const roomName of enabledRooms) {
+    runRoomManager(roomName);
   }
-  Game.structures
-  for(var name in Game.creeps) {
+
+  // 自动发现新房间（如果有新的controller）
+  for (const roomName in Game.rooms) {
+    const room = Game.rooms[roomName];
+    if (room.controller && room.controller.my && !enabledRooms.includes(roomName)) {
+      console.log(`[Main] 发现新房间: ${roomName}`);
+      getRoomManager(roomName);
+    }
+  }
+
+  // 运行creep逻辑
+  for (const name in Game.creeps) {
     const creep = Game.creeps[name];
-    switch (creep.memory.role){
-      case CommonConstant.HARVESTER:
+
+    // 确保creep有homeRoom
+    if (!creep.memory.homeRoom) {
+      creep.memory.homeRoom = creep.room.name;
+    }
+
+    switch (creep.memory.role) {
+      case ROLE_NAMES.HARVESTER:
         const harvester = new Harvester(creep);
-        // Harvester现在可以动态获取sources，不再需要传入参数
         harvester.harvest();
         break;
-      case CommonConstant.CONTAINER_CARRY:
+      case ROLE_NAMES.CONTAINER_CARRY:
         const containerCarry = new ContainerCarry(creep);
-        // ContainerCarry负责Container到Storage的物流
         containerCarry.transport();
         break;
-      case CommonConstant.STORAGE_CARRY:
+      case ROLE_NAMES.STORAGE_CARRY:
         const storageCarry = new StorageCarry(creep);
-        // StorageCarry负责Storage到各个建筑的能量分配
         storageCarry.transport();
         break;
-      case CommonConstant.CARRY:
+      case ROLE_NAMES.CARRY:
         const carry = new Carry(creep);
-        // 保留原有Carry逻辑作为备用
         carry.transport();
         break;
-      case CommonConstant.UPGRADER:
+      case ROLE_NAMES.UPGRADER:
         const upgrader = new Upgrader(creep);
-        // 获取当前房间的sources用于upgrader
         const sourcesForUpgrader = SourceUtils.getRoomSources(creep.room);
         upgrader.upgrade(sourcesForUpgrader);
         break;
-      case CommonConstant.BUILDER:
+      case ROLE_NAMES.BUILDER:
         const builder = new Builder(creep);
-        // 获取当前房间的sources用于builder
         const sourcesForBuilder = SourceUtils.getRoomSources(creep.room);
         builder.build(sourcesForBuilder);
         break;
     }
   }
 
-  // 塔管理逻辑
-  if (CommonConstant.TOWER_ENABLED) {
-    const towerManager = TowerManager.getInstance();
-    towerManager.manageRoomTowers(CommonConstant.TOWER_ROOM_NAME);
-  }
-
-  // Automatically delete memory of missing creeps
+  // 清理过期内存
   for (const name in Memory.creeps) {
     if (!(name in Game.creeps)) {
       delete Memory.creeps[name];
     }
+  }
+
+  // 清理不存在的房间管理器
+  for (const roomName in roomManagers) {
+    if (!Game.rooms[roomName]) {
+      delete roomManagers[roomName];
+      if (Memory.globalRoomManager) {
+        const index = Memory.globalRoomManager.enabledRooms.indexOf(roomName);
+        if (index > -1) {
+          Memory.globalRoomManager.enabledRooms.splice(index, 1);
+        }
+      }
+      console.log(`[Main] 移除不存在的房间管理器: ${roomName}`);
+    }
+  }
+
+  if (Memory.globalRoomManager) {
+    Memory.globalRoomManager.lastGlobalUpdate = Game.time;
   }
 });
 

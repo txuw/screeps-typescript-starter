@@ -1,4 +1,5 @@
-import { CommonConstant } from "../common/CommonConstant";
+import { ConfigLoader } from "../config/ConfigLoader";
+import { GLOBAL_ALGORITHM_CONFIG } from "../config/GlobalConstants";
 
 export interface TowerConfig {
   allyOwners: string[];
@@ -70,38 +71,47 @@ export class TowerManager {
       return;
     }
 
+    // 获取房间配置
+    const configLoader = ConfigLoader.getInstance();
+    const roomConfig = configLoader.getRoomConfig(roomName, room);
+
+    if (!roomConfig.towerConfig.enabled) {
+      return; // 塔防未启用
+    }
+
     // 获取房间内所有的塔
     const towers = room.find<StructureTower>(FIND_MY_STRUCTURES, {
       filter: structure => structure.structureType === STRUCTURE_TOWER
     });
 
     for (const tower of towers) {
-      this.manageTower(tower);
+      this.manageTower(tower, roomConfig.towerConfig);
     }
   }
 
   /**
    * 管理单个塔的行为
    * @param tower 塔对象
+   * @param towerConfig 房间塔防配置
    */
-  private manageTower(tower: StructureTower): void {
+  private manageTower(tower: StructureTower, towerConfig: any): void {
     // 检查塔是否有足够的能量
-    if (tower.store.getUsedCapacity(RESOURCE_ENERGY) < this.config.minEnergyForAction) {
+    if (tower.store.getUsedCapacity(RESOURCE_ENERGY) < 10) {
       return;
     }
 
     // 优先级0: 攻击敌人
-    if (this.handleDefense(tower)) {
+    if (this.handleDefense(tower, towerConfig)) {
       return;
     }
 
     // 优先级1: 修复建筑
-    if (this.handleRepair(tower)) {
+    if (this.handleRepair(tower, towerConfig)) {
       return;
     }
 
     // 优先级2: 治疗友军
-    if (this.handleHeal(tower)) {
+    if (this.handleHeal(tower, towerConfig)) {
       return;
     }
   }
@@ -109,9 +119,10 @@ export class TowerManager {
   /**
    * 处理防御 - 攻击敌人
    * @param tower 塔对象
+   * @param towerConfig 塔防配置
    * @returns 是否执行了攻击
    */
-  private handleDefense(tower: StructureTower): boolean {
+  private handleDefense(tower: StructureTower, towerConfig: any): boolean {
     // 查找房间内的敌人creep
     const hostileCreeps = tower.room.find(FIND_HOSTILE_CREEPS, {
       filter: creep => !this.config.allyOwners.includes(creep.owner.username)
@@ -138,9 +149,10 @@ export class TowerManager {
    * 处理修复 - 修复损坏的建筑
    * 优先级：1. 建筑类型优先级 2. 血量占比（低优先） 3. 距离（近优先）
    * @param tower 塔对象
+   * @param towerConfig 塔防配置
    * @returns 是否执行了修复
    */
-  private handleRepair(tower: StructureTower): boolean {
+  private handleRepair(tower: StructureTower, towerConfig: any): boolean {
     // 查找需要修复的建筑
     const damagedStructures = tower.room.find(FIND_STRUCTURES, {
       filter: structure => {
@@ -200,9 +212,10 @@ export class TowerManager {
   /**
    * 处理治疗 - 治疗友军creep
    * @param tower 塔对象
+   * @param towerConfig 塔防配置
    * @returns 是否执行了治疗
    */
-  private handleHeal(tower: StructureTower): boolean {
+  private handleHeal(tower: StructureTower, towerConfig: any): boolean {
     // 查找需要治疗的友军creep
     const friendlyCreeps = tower.room.find(FIND_MY_CREEPS, {
       filter: creep => creep.hits < creep.hitsMax

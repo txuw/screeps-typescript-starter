@@ -83,11 +83,13 @@ export class CreepFactory {
     // 生成creep名称
     const creepName = this.generateCreepName(config.role);
 
-    // 尝试生产creep
-    const result = spawn.spawnCreep(config.bodyParts, creepName, {
+    // 尝试生产creep (兼容新的body字段和旧的bodyParts字段)
+    const bodyParts = config.body || config.bodyParts || [];
+    const result = spawn.spawnCreep(bodyParts, creepName, {
       memory: {
         role: config.role,
         room: spawn.room.name,
+        homeRoom: spawn.room.name,  // 新增homeRoom字段
         working: false,
         upgrading: false,
         building: false,
