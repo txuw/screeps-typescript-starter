@@ -9,6 +9,7 @@ export const ROLE_NAMES = {
     CONTAINER_CARRY: 'containerCarry',
     STORAGE_CARRY: 'storageCarry',
     LINK_CARRY: 'linkCarry',
+    CLAIMER: 'claimer',
 } as const;
 
 // 全局算法参数
@@ -58,6 +59,16 @@ export const GLOBAL_ALGORITHM_CONFIG = {
         MIN_ENERGY_TO_TRANSFER: 100, // 最小传输能量
         STORAGE_LINK_THRESHOLD: 0.7, // Storage Link传输阈值
         SOURCE_LINK_THRESHOLD: 0.5,  // Source Link传输阈值
+    },
+
+    // 探索者相关配置
+    CLAIMER_CONFIG: {
+        CLAIM_PARTS: 2,              // CLAIM部件数量
+        MOVE_PARTS: 10,              // MOVE部件数量
+        LIFETIME_TICKS: 600,         // CLAIM creep寿命
+        CLAIM_RANGE: 1,              // claimController范围
+        RESERVATION_TICKS_PER_PART: 1, // 每个CLAIM部件每tick增加的预定时间
+        DECCELERATION_TICKS_PER_PART: 300, // 每个CLAIM部件每tick加速的降级时间
     },
 } as const;
 

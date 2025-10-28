@@ -6,6 +6,7 @@ import {Carry} from "./role/Carry";
 import {ContainerCarry} from "./role/ContainerCarry";
 import {StorageCarry} from "./role/StorageCarry";
 import {LinkCarry} from "./role/LinkCarry";
+import {Claimer} from "./role/Claimer";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {LinkManager} from "./manager/LinkManager";
@@ -44,6 +45,11 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
   const needsLinkCarry = roomManager.hasWorkForLinkCarry() &&
                          roomManager.needsCreepProduction('linkCarry');
 
+  // 检查是否需要探索者（仅在GCL达到6级且有占领目标时）
+  const needsClaimer = Game.gcl.level >= 6 &&
+                       roomManager.hasClaimTargets() &&
+                       roomManager.needsCreepProduction('claimer');
+
   // 紧急状态：只生产采集者保证基本运转
   if (roomState === 'emergency') {
     return needsHarvester;
@@ -72,7 +78,8 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
            roomManager.needsCreepProduction('builder') ||
            roomManager.needsCreepProduction('upgrader') ||
            roomManager.needsCreepProduction('carry') ||
-           roomManager.needsCreepProduction('containerCarry');
+           roomManager.needsCreepProduction('containerCarry') ||
+           needsClaimer;
   }
 
   // 正常状态：根据RCL决定生产策略
@@ -92,14 +99,15 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('carry') ||
              roomManager.needsCreepProduction('containerCarry');
     } else {
-      // 高级RCL：全面发展
+      // 高级RCL：全面发展，包括探索者
       return needsHarvester ||
              needsLinkCarry ||
              roomManager.needsCreepProduction('builder') ||
              roomManager.needsCreepProduction('upgrader') ||
              roomManager.needsCreepProduction('carry') ||
              roomManager.needsCreepProduction('containerCarry') ||
-             roomManager.needsCreepProduction('storageCarry');
+             roomManager.needsCreepProduction('storageCarry') ||
+             needsClaimer;
     }
   }
 
@@ -122,6 +130,11 @@ function initializeGame(): void {
       enabledRooms: [],
       lastGlobalUpdate: Game.time,
     };
+  }
+
+  // 初始化探索者目标房间配置
+  if (!Memory.targetRooms) {
+    Memory.targetRooms = [];
   }
 
   console.log('[Main] 游戏初始化完成');
@@ -172,6 +185,9 @@ function runRoomManager(roomName: string): void {
 
   // 更新房间状态
   roomManager.updateRoomStatus();
+
+  // 同步探索者目标房间配置到内存
+  roomManager.syncClaimTargetsToMemory();
 
   // 生产creep - 智能生产策略
   const creepFactory = CreepFactory.getInstance();
@@ -270,6 +286,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
         const builder = new Builder(creep);
         const sourcesForBuilder = SourceUtils.getRoomSources(creep.room);
         builder.build(sourcesForBuilder);
+        break;
+      case ROLE_NAMES.CLAIMER:
+        const claimer = new Claimer(creep);
+        claimer.work();
         break;
     }
   }

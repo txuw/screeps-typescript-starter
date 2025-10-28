@@ -13,6 +13,16 @@ declare global {
       enabledRooms: string[];
       lastGlobalUpdate: number;
     };
+    // 探索者目标房间配置
+    targetRooms?: Array<{
+      roomName: string;
+      x: number;
+      y: number;
+      priority?: number;
+      claimed?: boolean;
+      claimedAt?: number;
+      claimedBy?: string;
+    }>;
   }
 
   // 扩展CreepMemory接口

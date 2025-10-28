@@ -1,4 +1,6 @@
 import { CreepConfig, CreepProductionResult } from "../types/CreepConfig";
+import { ROLE_NAMES } from "../config/GlobalConstants";
+import { ClaimerUtils } from "../utils/ClaimerUtils";
 
 export class CreepFactory {
   private static instance: CreepFactory;
@@ -83,8 +85,14 @@ export class CreepFactory {
     // 生成creep名称
     const creepName = this.generateCreepName(config.role);
 
-    // 尝试生产creep (兼容新的body字段和旧的bodyParts字段)
-    const bodyParts = config.body || config.bodyParts || [];
+    // 确定身体配置
+    let bodyParts = config.body || config.bodyParts || [];
+
+    // 探索者特殊处理：动态生成身体配置
+    if (config.role === ROLE_NAMES.CLAIMER && bodyParts.length === 0) {
+      bodyParts = ClaimerUtils.generateClaimerBody(spawn.room.energyCapacityAvailable);
+    }
+
     const result = spawn.spawnCreep(bodyParts, creepName, {
       memory: {
         role: config.role,
@@ -120,11 +128,27 @@ export class CreepFactory {
     // 按优先级排序（数字越小优先级越高）
     const sortedConfigs = [...configs].sort((a, b) => a.priority - b.priority);
 
+    // 获取spawn对象
+    const spawn = Game.spawns[this.spawnName];
+    if (!spawn) {
+      return {
+        success: false,
+        error: `Spawn ${this.spawnName} not found`
+      };
+    }
+
     for (const config of sortedConfigs) {
       const currentCount = this.getCurrentCreepCount(config.role);
 
       // 检查是否需要生产
       if (currentCount < config.maxCount) {
+        // 探索者特殊检查：确保有足够能量
+        if (config.role === ROLE_NAMES.CLAIMER) {
+          if (!ClaimerUtils.hasEnoughEnergy(spawn.room)) {
+            continue; // 能量不足，跳过此配置
+          }
+        }
+
         const result = this.produceCreep(config);
 
         // 如果生产成功或者是因为资源不足外的其他原因失败，返回结果

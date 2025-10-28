@@ -61,6 +61,14 @@ export const BASE_CREEP_CONFIGS: CreepConfig[] = [
         priority: 5,
         needLength: 2,
     },
+    // 探索者
+    {
+        role: ROLE_NAMES.CLAIMER,
+        body: [], // 将由ClaimerUtils.generateClaimerBody动态生成
+        maxCount: 1,
+        priority: 4, // 中等优先级
+        needLength: 1,
+    },
 ];
 
 // 基础房间配置模板
@@ -187,6 +195,8 @@ export const BASE_ROOM_CONFIG: Omit<RoomConfig, 'roomName'> = {
         allowCreepSharing: false,
         sharingPriority: 5,
         maxSharedCreeps: 2,
+        claimTargets: [], // 将在具体房间配置中设置目标房间
+        enableClaiming: false, // 默认关闭，在需要时启用
     },
 
     // 特殊配置

@@ -361,4 +361,67 @@ export class RoomManager {
         // 检查LinkCarry数量是否足够
         return this.needsCreepProduction('linkCarry');
     }
+
+    /**
+     * 检查房间是否有占领目标
+     */
+    public hasClaimTargets(): boolean {
+        // 检查房间是否启用了探索者功能
+        if (!this.config.crossRoomConfig?.enableClaiming) {
+            return false;
+        }
+
+        // 检查是否有占领目标
+        const claimTargets = this.config.crossRoomConfig?.claimTargets || [];
+        return claimTargets.length > 0;
+    }
+
+    /**
+     * 同步目标房间配置到内存
+     */
+    public syncClaimTargetsToMemory(): void {
+        if (!this.hasClaimTargets()) {
+            return;
+        }
+
+        const claimTargets = this.config.crossRoomConfig?.claimTargets || [];
+        const memoryTargets = Memory.targetRooms || [];
+
+        // 将配置中的目标同步到内存
+        for (const target of claimTargets) {
+            const existingTarget = memoryTargets.find((t: any) => t.roomName === target.roomName);
+            if (!existingTarget) {
+                memoryTargets.push({
+                    roomName: target.roomName,
+                    x: target.x,
+                    y: target.y,
+                    priority: target.priority || 1,
+                    claimed: target.claimed || false,
+                });
+            }
+        }
+
+        Memory.targetRooms = memoryTargets;
+    }
+
+    /**
+     * 检查目标房间是否已经被占领
+     */
+    public isTargetRoomClaimed(roomName: string): boolean {
+        const memoryTargets = Memory.targetRooms || [];
+        const target = memoryTargets.find((t: any) => t.roomName === roomName);
+        return target?.claimed || false;
+    }
+
+    /**
+     * 获取未占领的目标房间
+     */
+    public getUnclaimedTargets(): Array<{ roomName: string; x: number; y: number; priority?: number }> {
+        if (!this.hasClaimTargets()) {
+            return [];
+        }
+
+        const claimTargets = this.config.crossRoomConfig?.claimTargets || [];
+        return claimTargets.filter(target => !this.isTargetRoomClaimed(target.roomName));
+    }
 }

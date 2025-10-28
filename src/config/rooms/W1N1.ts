@@ -57,6 +57,13 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
         priority: 6,
         needLength: 0,
     },
+    {
+        role: ROLE_NAMES.CLAIMER,
+        body: [], // 将由ClaimerUtils.generateClaimerBody动态生成
+        maxCount: 1,
+        priority: 4, // 中等优先级
+        needLength: 1,
+    },
 ];
 
 // 创建W1N1的基础配置
@@ -167,11 +174,21 @@ const w1n1Config = createRoomConfig('W1N1', {
         cacheDuration: 100,
     },
 
-    // 跨房间配置 - 主要房间，可以分享creep
+    // 跨房间配置 - 主要房间，可以分享creep和进行扩张
     crossRoomConfig: {
         allowCreepSharing: true,
         sharingPriority: 1,
         maxSharedCreeps: 3,
+        claimTargets: [
+            // {
+            //     roomName: 'W2N1',
+            //     x: 7,
+            //     y: 11,
+            //     priority: 1,
+            //     claimed: false,
+            // },
+        ],
+        enableClaiming: true, // 启用探索者功能
     },
 });
 

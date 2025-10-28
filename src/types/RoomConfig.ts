@@ -95,6 +95,14 @@ export interface RoomConfig {
         allowCreepSharing: boolean;
         sharingPriority: number;
         maxSharedCreeps: number;
+        claimTargets?: Array<{
+            roomName: string;
+            x: number;
+            y: number;
+            priority?: number;
+            claimed?: boolean;
+        }>;
+        enableClaiming?: boolean;
     };
 
     // 特殊配置
