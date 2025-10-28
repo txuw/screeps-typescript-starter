@@ -276,4 +276,74 @@ export class CarryUtils {
     this.smartWaiting(creep, true, message, logMessage);
     return false;
   }
+
+  /**
+   * 检查Link是否需要能量（Link专用的能量检查）
+   * @param link Link对象
+   * @param threshold 阈值（0-1之间的百分比）
+   * @returns 是否需要能量
+   */
+  static linkNeedsEnergy(link: StructureLink, threshold: number = 0.8): boolean {
+    const currentEnergy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+    const maxEnergy = link.store.getCapacity(RESOURCE_ENERGY);
+    const fillPercent = currentEnergy / maxEnergy;
+    return fillPercent < threshold;
+  }
+
+  /**
+   * 检查Link是否有足够能量可以提取
+   * @param link Link对象
+   * @param minEnergy 最小能量要求
+   * @returns 是否有足够能量
+   */
+  static linkHasEnergy(link: StructureLink, minEnergy: number = 100): boolean {
+    const currentEnergy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+    return currentEnergy >= minEnergy;
+  }
+
+  /**
+   * 计算Link的能量填充百分比
+   * @param link Link对象
+   * @returns 填充百分比（0-1）
+   */
+  static getLinkFillPercent(link: StructureLink): number {
+    const currentEnergy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+    const maxEnergy = link.store.getCapacity(RESOURCE_ENERGY);
+    return currentEnergy / maxEnergy;
+  }
+
+  /**
+   * 找到距离指定位置最近的Link
+   * @param links Link列表
+   * @param position 参考位置
+   * @returns 最近的Link
+   */
+  static findNearestLink(links: StructureLink[], position: RoomPosition): StructureLink | null {
+    if (links.length === 0) {
+      return null;
+    }
+
+    let nearest = links[0];
+    let minDistance = this.calculateDistance(position, nearest.pos);
+
+    for (let i = 1; i < links.length; i++) {
+      const distance = this.calculateDistance(position, links[i].pos);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = links[i];
+      }
+    }
+
+    return nearest;
+  }
+
+  /**
+   * 计算两个位置之间的曼哈顿距离
+   * @param pos1 位置1
+   * @param pos2 位置2
+   * @returns 曼哈顿距离
+   */
+  static calculateDistance(pos1: RoomPosition, pos2: RoomPosition): number {
+    return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+  }
 }

@@ -13,6 +13,14 @@ export const BASE_CREEP_CONFIGS: CreepConfig[] = [
         priority: 10,
         needLength: 4,
     },
+    // Link运输者
+    {
+        role: ROLE_NAMES.LINK_CARRY,
+        body: [CARRY, CARRY, MOVE, MOVE],
+        maxCount: 2,
+        priority: 1, // 最高优先级
+        needLength: 2,
+    },
     // 建造者
     {
         role: ROLE_NAMES.BUILDER,
@@ -150,6 +158,22 @@ export const BASE_ROOM_CONFIG: Omit<RoomConfig, 'roomName'> = {
             enableStorageLogic: true,
             minEnergyForUpgrade: 100000,
         },
+        linkManagement: {
+            enabled: true,
+            transferInterval: 3,
+            sourceTransferThreshold: GLOBAL_ALGORITHM_CONFIG.LINK_CONFIG.SOURCE_LINK_THRESHOLD,
+            storageTransferThreshold: GLOBAL_ALGORITHM_CONFIG.LINK_CONFIG.STORAGE_LINK_THRESHOLD,
+            minEnergyToTransfer: GLOBAL_ALGORITHM_CONFIG.LINK_CONFIG.MIN_ENERGY_TO_TRANSFER,
+        },
+    },
+
+    // Link网络配置
+    linkConfig: {
+        enabled: true,
+        transferInterval: 3,
+        sourceTransferThreshold: GLOBAL_ALGORITHM_CONFIG.LINK_CONFIG.SOURCE_LINK_THRESHOLD,
+        storageTransferThreshold: GLOBAL_ALGORITHM_CONFIG.LINK_CONFIG.STORAGE_LINK_THRESHOLD,
+        minEnergyToTransfer: GLOBAL_ALGORITHM_CONFIG.LINK_CONFIG.MIN_ENERGY_TO_TRANSFER,
     },
 
     // 缓存配置

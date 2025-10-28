@@ -242,6 +242,73 @@ export class SourceUtils {
   }
 
   /**
+   * 动态获取房间内所有的Link（使用缓存）
+   * @param room 房间对象
+   * @returns link列表
+   */
+  static getRoomLinks(room: Room): Array<StructureLink> {
+    const cacheKey = `roomLinks_${room.name}`;
+    const cached = GameCacheManager.getCache<Array<StructureLink>>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const links = room.find<StructureLink>(FIND_MY_STRUCTURES, {
+      filter: structure => structure.structureType === STRUCTURE_LINK
+    });
+
+    GameCacheManager.setCache(cacheKey, links);
+    return links;
+  }
+
+  /**
+   * 查找需要能量的Link
+   * @param room 房间对象
+   * @returns 需要能量的link列表
+   */
+  static findNeedyLinks(room: Room): Array<StructureLink> {
+    const cacheKey = `needyLinks_${room.name}`;
+    const cached = GameCacheManager.getCache<Array<StructureLink>>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const links = this.getRoomLinks(room).filter(link => {
+      const currentEnergy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+      const maxEnergy = link.store.getCapacity(RESOURCE_ENERGY);
+      return currentEnergy < maxEnergy;
+    });
+
+    GameCacheManager.setCache(cacheKey, links);
+    return links;
+  }
+
+  /**
+   * 查找有能量的Link
+   * @param room 房间对象
+   * @param minEnergy 最小能量阈值
+   * @returns 有能量的link列表
+   */
+  static findEnergizedLinks(room: Room, minEnergy: number = 100): Array<StructureLink> {
+    const cacheKey = `energizedLinks_${room.name}_${minEnergy}`;
+    const cached = GameCacheManager.getCache<Array<StructureLink>>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const links = this.getRoomLinks(room).filter(link => {
+      const currentEnergy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+      return currentEnergy >= minEnergy;
+    });
+
+    GameCacheManager.setCache(cacheKey, links);
+    return links;
+  }
+
+  /**
    * 获取Spawn位置
    */
   private static getSpawnPosition(): RoomPosition {

@@ -8,6 +8,7 @@ export const ROLE_NAMES = {
     CARRY: 'carry',
     CONTAINER_CARRY: 'containerCarry',
     STORAGE_CARRY: 'storageCarry',
+    LINK_CARRY: 'linkCarry',
 } as const;
 
 // 全局算法参数
@@ -33,11 +34,12 @@ export const GLOBAL_ALGORITHM_CONFIG = {
         tower: 2,
         storage: 3,
         container: 4,
-        wall: 5,
-        rampart: 6,
-        road: 7,
-        constructedWall: 8,
-        controller: 9,
+        link: 5,
+        wall: 6,
+        rampart: 7,
+        road: 8,
+        constructedWall: 9,
+        controller: 10,
     } as const,
 
     // 等待位置管理
@@ -45,6 +47,17 @@ export const GLOBAL_ALGORITHM_CONFIG = {
         MAX_WAITING_TIME: 50,        // 最大等待时间
         RECHECK_INTERVAL: 5,         // 重新检查间隔
         DEFAULT_DISTANCE: 3,         // 默认等待距离
+    },
+
+    // Link相关配置
+    LINK_CONFIG: {
+        CAPACITY: 800,               // Link容量
+        TRANSFER_COST: 0.03,         // 传输能量消耗比例 (3%)
+        COOLDOWN: 1,                 // 传输冷却时间
+        TRANSFER_RANGE: 2,           // 传输范围
+        MIN_ENERGY_TO_TRANSFER: 100, // 最小传输能量
+        STORAGE_LINK_THRESHOLD: 0.7, // Storage Link传输阈值
+        SOURCE_LINK_THRESHOLD: 0.5,  // Source Link传输阈值
     },
 } as const;
 

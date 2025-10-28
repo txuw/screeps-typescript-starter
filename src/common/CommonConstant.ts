@@ -7,12 +7,14 @@ export class CommonConstant{
   static CARRY_NEED_LENGTH = 1;
   static CONTAINER_CARRY_NEED_LENGTH = 2;
   static STORAGE_CARRY_NEED_LENGTH = 1;
+  static LINK_CARRY_NEED_LENGTH = 1;
   static HARVESTER = 'harvester';
   static UPGRADER = 'upgrader';
   static BUILDER = 'builder';
   static CARRY = 'carry';
   static CONTAINER_CARRY = 'containerCarry';
   static STORAGE_CARRY = 'storageCarry';
+  static LINK_CARRY = 'linkCarry';
 
   // 塔配置
   static TOWER_ENABLED = true;
@@ -29,6 +31,12 @@ export class CommonConstant{
   static CONTAINER_BASE_WORKERS = 1; // 基础Carry数量
   static CONTAINER_MIN_WORKERS = 1; // 最少Carry数量
   static CONTAINER_MAX_WORKERS = 3; // 最多Carry数量
+
+  // Link分配算法配置参数
+  static LINK_DISTANCE_FACTOR = 1.2; // 距离系数：每距离10格需要多少个额外LinkCarry
+  static LINK_BASE_WORKERS = 1; // 基础LinkCarry数量
+  static LINK_MIN_WORKERS = 1; // 最少LinkCarry数量
+  static LINK_MAX_WORKERS = 2; // 最多LinkCarry数量
 
   // Container分配策略配置
   static CONTAINER_ASSIGNMENT_STRATEGY = 'dynamic'; // 'nearest', 'round_robin', 'balance', 'dynamic'
@@ -49,10 +57,16 @@ export class CommonConstant{
       priority: 2 // 最高优先级
     },
     {
+      role: CommonConstant.LINK_CARRY,
+      bodyParts: [MOVE,MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
+      maxCount: CommonConstant.LINK_CARRY_NEED_LENGTH,
+      priority: 0 // 最高优先级，确保Link能量及时搬运
+    },
+    {
       role: CommonConstant.CONTAINER_CARRY,
       bodyParts: [MOVE,MOVE, MOVE, MOVE, MOVE, MOVE,MOVE, MOVE,  CARRY, CARRY, CARRY, CARRY, CARRY,  CARRY, CARRY, CARRY,  CARRY, CARRY],
       maxCount: CommonConstant.CONTAINER_CARRY_NEED_LENGTH,
-      priority: 1 // 最高优先级，确保Container到Storage的物流
+      priority: 1 // 次高优先级，确保Container到Storage的物流
     },
     {
       role: CommonConstant.STORAGE_CARRY,
@@ -62,7 +76,7 @@ export class CommonConstant{
     },
     {
       role: CommonConstant.CARRY,  // 基础搬运工，进行容错
-      bodyParts: [MOVE,CARRY,WORK],
+      bodyParts: [MOVE,CARRY,CARRY,WORK],
       maxCount: CommonConstant.CARRY_NEED_LENGTH,
       priority: 0 // 最高优先级，
     },

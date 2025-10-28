@@ -39,6 +39,13 @@ export interface RoomResourceConfig {
         enableStorageLogic: boolean;
         minEnergyForUpgrade: number;
     };
+    linkManagement: {
+        enabled: boolean;
+        transferInterval: number;
+        sourceTransferThreshold: number;
+        storageTransferThreshold: number;
+        minEnergyToTransfer: number;
+    };
 }
 
 export interface RoomConfig {
@@ -67,6 +74,15 @@ export interface RoomConfig {
 
     // 资源管理配置
     resourceConfig: RoomResourceConfig;
+
+    // Link网络配置
+    linkConfig: {
+        enabled: boolean;
+        transferInterval: number;
+        sourceTransferThreshold: number;
+        storageTransferThreshold: number;
+        minEnergyToTransfer: number;
+    };
 
     // 缓存配置
     cacheConfig: {

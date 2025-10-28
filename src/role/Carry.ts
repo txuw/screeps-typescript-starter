@@ -7,8 +7,9 @@ export class Carry {
 
   // 能量存储结构优先级映射表（withdraw目标），数字越小优先级越高
   withdrawPriority: { [key: string]: number } = {
+    [STRUCTURE_STORAGE]: 0,
     [STRUCTURE_CONTAINER]: 1,
-    [STRUCTURE_STORAGE]: 0
+    [STRUCTURE_LINK]: 2  // 支持从Link提取，但优先级最低
   };
 
   // 能量接收建筑优先级映射表（transfer目标），数字越小优先级越高
@@ -259,23 +260,22 @@ export class Carry {
   }
 
   /**
-   * 查找可用的存储结构（除Container外）
+   * 查找可用的存储结构
    * @returns 可用的存储结构列表
    */
   private findAvailableStorageStructures(): Array<Structure> {
     return this.creep.room.find(FIND_STRUCTURES, {
       filter: structure => {
-        // 排除Container，因为Container通过轮询策略处理
-        // if (structure.structureType === STRUCTURE_CONTAINER) {
-        //   return false;
-        // }
-
         // 只考虑有存储容量且有能量的结构
-        if ("store" in structure) {
-          const store = structure as any;
-          return store.store[RESOURCE_ENERGY] > 0;
+        if (!("store" in structure)) {
+          return false;
         }
-        return false;
+
+        const store = structure as any;
+        const energy = store.store[RESOURCE_ENERGY];
+
+        // 其他结构只要有能量就可以提取
+        return energy > 0;
       }
     });
   }

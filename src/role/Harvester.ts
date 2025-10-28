@@ -9,7 +9,8 @@ export class Harvester {
   structurePriority: { [key: string]: number } = {
     [STRUCTURE_SPAWN]: 0,
     [STRUCTURE_EXTENSION]: 1,
-    [STRUCTURE_CONTAINER]: 2
+    [STRUCTURE_LINK]: 2,
+    [STRUCTURE_CONTAINER]: 3
   };
 
   constructor(creep: Creep) {
@@ -82,10 +83,29 @@ export class Harvester {
   }
 
   /**
-   * 转移能量到最近的 Container
+   * 转移能量到最近的存储结构
+   * 优先级：Link > Container
    * 使用SourceUtils的通用方法
    */
   private transferToContainer() {
+    // 首先尝试找到3*3范围内的Link
+    const nearbyLinks = this.findNearbyLinks();
+
+    if (nearbyLinks.length > 0) {
+      // 优先使用Link
+      const nearestLink = SourceUtils.sortByPriority(
+        nearbyLinks,
+        { [STRUCTURE_LINK]: 0 },
+        this.creep.pos
+      )[0];
+
+      if (this.creep.transfer(nearestLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        this.creep.moveTo(nearestLink, { visualizePathStyle: { stroke: '#00ff00' } });
+      }
+      return;
+    }
+
+    // 如果没有Link，使用Container
     const needyContainers = SourceUtils.findNeedyContainers(this.creep);
 
     if (needyContainers.length > 0) {
@@ -101,6 +121,36 @@ export class Harvester {
         this.creep.moveTo(nearestContainer, { visualizePathStyle: { stroke: '#ffffff' } });
       }
     }
+  }
+
+  /**
+   * 查找3*3范围内需要能量的Link
+   * @returns 需要能量的Link数组
+   */
+  private findNearbyLinks(): StructureLink[] {
+    const nearbyStructures = this.creep.room.find(FIND_STRUCTURES, {
+      filter: structure => {
+        // 只考虑Link且在3*3范围内
+        if (structure.structureType !== STRUCTURE_LINK) {
+          return false;
+        }
+
+        const distance = Math.abs(this.creep.pos.x - structure.pos.x) +
+                        Math.abs(this.creep.pos.y - structure.pos.y);
+        if (distance > 3) {
+          return false;
+        }
+
+        // 检查Link是否需要能量
+        const link = structure as StructureLink;
+        const currentEnergy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+        const maxEnergy = link.store.getCapacity(RESOURCE_ENERGY);
+
+        return currentEnergy < maxEnergy;
+      }
+    });
+
+    return nearbyStructures as StructureLink[];
   }
 
   /**

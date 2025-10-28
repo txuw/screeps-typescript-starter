@@ -5,8 +5,10 @@ import {Upgrader} from "./role/Upgrader";
 import {Carry} from "./role/Carry";
 import {ContainerCarry} from "./role/ContainerCarry";
 import {StorageCarry} from "./role/StorageCarry";
+import {LinkCarry} from "./role/LinkCarry";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
+import {LinkManager} from "./manager/LinkManager";
 import {SourceUtils} from "./utils/SourceUtils";
 import {GameCacheManager} from "./utils/GameCacheManager";
 import { ConfigLoader } from "./config/ConfigLoader";
@@ -38,14 +40,19 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
   // 基础检查：确保有最基本的creep
   const needsHarvester = roomManager.needsCreepProduction('harvester');
 
+  // 检查房间是否有Link网络需要LinkCarry
+  const needsLinkCarry = roomManager.hasWorkForLinkCarry() &&
+                         roomManager.needsCreepProduction('linkCarry');
+
   // 紧急状态：只生产采集者保证基本运转
   if (roomState === 'emergency') {
     return needsHarvester;
   }
 
-  // 低能量状态：优先保证采集和运输
+  // 低能量状态：优先保证采集和运输，包括Link搬运
   if (roomState === 'low_energy') {
     return needsHarvester ||
+           needsLinkCarry ||
            roomManager.needsCreepProduction('carry') ||
            roomManager.needsCreepProduction('containerCarry');
   }
@@ -53,6 +60,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
   // 攻击状态：优先保证基本运转，暂停建造
   if (roomState === 'under_attack') {
     return needsHarvester ||
+           needsLinkCarry ||
            roomManager.needsCreepProduction('upgrader') ||
            roomManager.needsCreepProduction('carry');
   }
@@ -60,6 +68,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
   // 发展状态：需要所有类型的creep
   if (roomState === 'developing') {
     return needsHarvester ||
+           needsLinkCarry ||
            roomManager.needsCreepProduction('builder') ||
            roomManager.needsCreepProduction('upgrader') ||
            roomManager.needsCreepProduction('carry') ||
@@ -71,11 +80,13 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
     if (rcl <= 3) {
       // 早期RCL：重点采集和升级
       return needsHarvester ||
+             needsLinkCarry ||
              roomManager.needsCreepProduction('upgrader') ||
              roomManager.needsCreepProduction('carry');
     } else if (rcl <= 6) {
       // 中期RCL：平衡发展
       return needsHarvester ||
+             needsLinkCarry ||
              roomManager.needsCreepProduction('builder') ||
              roomManager.needsCreepProduction('upgrader') ||
              roomManager.needsCreepProduction('carry') ||
@@ -83,6 +94,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
     } else {
       // 高级RCL：全面发展
       return needsHarvester ||
+             needsLinkCarry ||
              roomManager.needsCreepProduction('builder') ||
              roomManager.needsCreepProduction('upgrader') ||
              roomManager.needsCreepProduction('carry') ||
@@ -182,6 +194,13 @@ function runRoomManager(roomName: string): void {
     const towerManager = TowerManager.getInstance();
     towerManager.manageRoomTowers(roomName);
   }
+
+  // 运行Link网络
+  const linkConfig = roomManager.getConfig().linkConfig;
+  if (linkConfig.enabled) {
+    const linkManager = LinkManager.getInstance();
+    linkManager.manageRoomLinks(roomName);
+  }
 }
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -225,6 +244,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       case ROLE_NAMES.HARVESTER:
         const harvester = new Harvester(creep);
         harvester.harvest();
+        break;
+      case ROLE_NAMES.LINK_CARRY:
+        const linkCarry = new LinkCarry(creep);
+        linkCarry.transport();
         break;
       case ROLE_NAMES.CONTAINER_CARRY:
         const containerCarry = new ContainerCarry(creep);

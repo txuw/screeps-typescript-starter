@@ -1,6 +1,7 @@
 import { RoomConfig } from '../types/RoomConfig';
 import { RoomState, RoomStatusInfo, RoomDevelopmentStage } from '../types/RoomState';
 import { CreepConfig } from '../types/CreepConfig';
+import { LinkManager } from './LinkManager';
 
 /**
  * RoomManager - 管理单个房间的配置、状态和操作
@@ -140,6 +141,14 @@ export class RoomManager {
         const stateConfig = this.config.creepProduction.stateBasedConfigs[currentState];
 
         return stateConfig?.productionStrategy || 'balanced';
+    }
+
+    /**
+     * 获取房间Link统计信息
+     */
+    public getLinkStats(): { total: number; source: number; storage: number } | null {
+        const linkManager = LinkManager.getInstance();
+        return linkManager.getLinkStats(this.room.name);
     }
 
     /**
@@ -332,5 +341,24 @@ export class RoomManager {
     private saveStatusToMemory(): void {
         const memory = this.getRoomMemory();
         memory.roomStatus = this.statusInfo;
+    }
+
+    /**
+     * 检查房间是否有需要LinkCarry的Link
+     */
+    public hasWorkForLinkCarry(): boolean {
+        // 检查房间是否启用了Link管理
+        if (!this.config.linkConfig?.enabled) {
+            return false;
+        }
+
+        // 获取房间内的Link统计
+        const linkStats = this.getLinkStats();
+        if (!linkStats || linkStats.source === 0) {
+            return false; // 没有Source Link就不需要LinkCarry
+        }
+
+        // 检查LinkCarry数量是否足够
+        return this.needsCreepProduction('linkCarry');
     }
 }

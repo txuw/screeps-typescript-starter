@@ -12,42 +12,49 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
         role: ROLE_NAMES.HARVESTER,
         body: [MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
         maxCount: 2,
-        priority: 2,
+        priority: 3,
         needLength: 2,
+    },
+    {
+        role: ROLE_NAMES.LINK_CARRY,
+        body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
+        maxCount: 1,
+        priority: 0, // 最高优先级，确保Link能量及时搬运
+        needLength: 1,
     },
     {
         role: ROLE_NAMES.CONTAINER_CARRY,
         body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
-        maxCount: 2,
-        priority: 1,
-        needLength: 2,
+        maxCount: 0,
+        priority: 2,
+        needLength: 0,
     },
     {
         role: ROLE_NAMES.STORAGE_CARRY,
         body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
         maxCount: 1,
-        priority: 4,
+        priority: 5,
         needLength: 1,
     },
     {
         role: ROLE_NAMES.CARRY,
         body: [MOVE, CARRY, WORK],
         maxCount: 1,
-        priority: 0,
+        priority: 1, // 调整优先级，作为基础容错搬运
         needLength: 1,
     },
     {
         role: ROLE_NAMES.UPGRADER,
         body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
         maxCount: 2,
-        priority: 3,
+        priority: 4,
         needLength: 1,
     },
     {
         role: ROLE_NAMES.BUILDER,
         body: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
         maxCount: 0,
-        priority: 5,
+        priority: 6,
         needLength: 0,
     },
 ];
@@ -136,6 +143,22 @@ const w1n1Config = createRoomConfig('W1N1', {
             enableStorageLogic: true,
             minEnergyForUpgrade: 100000,
         },
+        linkManagement: {
+            enabled: true,
+            transferInterval: 3,
+            sourceTransferThreshold: 0.5,
+            storageTransferThreshold: 0.7,
+            minEnergyToTransfer: 100,
+        },
+    },
+
+    // Link网络配置
+    linkConfig: {
+        enabled: true,
+        transferInterval: 3,
+        sourceTransferThreshold: 0.5,
+        storageTransferThreshold: 0.7,
+        minEnergyToTransfer: 100,
     },
 
     // 缓存配置 - 使用原有参数

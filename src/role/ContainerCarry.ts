@@ -7,7 +7,8 @@ export class ContainerCarry {
 
   // 能量存储结构优先级映射表（withdraw目标），数字越小优先级越高
   withdrawPriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 0
+    [STRUCTURE_CONTAINER]: 0,
+    [STRUCTURE_LINK]: 1  // 支持从Link提取，但优先级低于Container
   };
 
   // 能量接收建筑优先级映射表（transfer目标），数字越小优先级越高
@@ -213,14 +214,35 @@ export class ContainerCarry {
   }
 
   /**
-   * 查找可用的Container
-   * @returns 可用的Container列表
+   * 查找可用的能量源
+   * @returns 可用的结构列表（Container和Link）
    */
   private findAvailableContainers(): Array<Structure> {
-    return CarryUtils.findAvailableStructures(
+    // 首先查找Container
+    const containers = CarryUtils.findAvailableStructures(
       this.creep,
       [STRUCTURE_CONTAINER],
       (structure) => CarryUtils.structureHasEnergy(structure, 1)
     );
+
+    // 如果没有Container，查找Link作为补充
+    if (containers.length === 0) {
+      const links = CarryUtils.findAvailableStructures(
+        this.creep,
+        [STRUCTURE_LINK],
+        (structure) => {
+          const link = structure as StructureLink;
+          const energy = link.store.getUsedCapacity(RESOURCE_ENERGY);
+          return energy > 100; // 只有Link有足够能量时才提取
+        }
+      );
+
+      if (links.length > 0) {
+        console.log(`ContainerCarry ${this.creep.name} using Link as backup energy source`);
+        return links;
+      }
+    }
+
+    return containers;
   }
 }
