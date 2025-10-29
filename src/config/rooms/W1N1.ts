@@ -1,7 +1,8 @@
 import { createRoomConfig, adjustConfigByRCL } from '../BaseRoomConfig';
-import { ROLE_NAMES } from '../GlobalConstants';
+import { ROLE_NAMES, GLOBAL_ALGORITHM_CONFIG } from '../GlobalConstants';
 import { CreepConfig } from '../../types/CreepConfig';
 import { RoomState } from '../../types/RoomState';
+import { MineralUtils } from '../../utils/MineralUtils';
 
 /**
  * W1N1房间配置 - 迁移自原有CommonConstant配置
@@ -33,7 +34,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
         role: ROLE_NAMES.STORAGE_CARRY,
         body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
         maxCount: 0,
-        priority: 5,
+        priority: 6, // 调整优先级，在Miner之后
         needLength: 0,
     },
     {
@@ -54,15 +55,23 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
         role: ROLE_NAMES.BUILDER,
         body: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
         maxCount: 0,
-        priority: 6,
+        priority: 7, // 调整优先级，在Miner和StorageCarry之后
         needLength: 0,
     },
     {
         role: ROLE_NAMES.CLAIMER,
         body: [], // 将由ClaimerUtils.generateClaimerBody动态生成
-        maxCount: 1,
+        maxCount: 0,
         priority: 4, // 中等优先级
+        needLength: 0,
+    },
+    {
+        role: ROLE_NAMES.MINER,
+        body: MineralUtils.generateMinerBody(),
+        maxCount: 1,
+        priority: 5, // Upgrader之后，StorageCarry之前
         needLength: 1,
+        storagePriority: GLOBAL_ALGORITHM_CONFIG.MINER_CONFIG.STORAGE_PRIORITY,
     },
 ];
 

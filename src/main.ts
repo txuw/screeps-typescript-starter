@@ -7,6 +7,7 @@ import {ContainerCarry} from "./role/ContainerCarry";
 import {StorageCarry} from "./role/StorageCarry";
 import {LinkCarry} from "./role/LinkCarry";
 import {Claimer} from "./role/Claimer";
+import {Miner} from "./role/Miner";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {LinkManager} from "./manager/LinkManager";
@@ -15,6 +16,7 @@ import {GameCacheManager} from "./utils/GameCacheManager";
 import { ConfigLoader } from "./config/ConfigLoader";
 import { RoomManager } from "./manager/RoomManager";
 import { ROLE_NAMES } from "./config/GlobalConstants";
+import { MineralUtils } from "./utils/MineralUtils";
 
 declare global {
   namespace NodeJS {
@@ -49,6 +51,10 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
                        roomManager.hasClaimTargets() &&
                        roomManager.needsCreepProduction('claimer');
 
+  // 检查是否需要矿物采集者（仅在有EXTRACTOR和矿物储量时）
+  const needsMiner = MineralUtils.shouldBuildMiner(roomManager.getRoom()) &&
+                     roomManager.needsCreepProduction('miner');
+
   // 紧急状态：只生产采集者保证基本运转
   if (roomState === 'emergency') {
     return needsHarvester;
@@ -78,6 +84,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
            roomManager.needsCreepProduction('upgrader') ||
            roomManager.needsCreepProduction('carry') ||
            roomManager.needsCreepProduction('containerCarry') ||
+           needsMiner ||
            needsClaimer;
   }
 
@@ -98,7 +105,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('carry') ||
              roomManager.needsCreepProduction('containerCarry');
     } else {
-      // 高级RCL：全面发展，包括探索者
+      // 高级RCL：全面发展，包括探索者和矿物采集者
       return needsHarvester ||
              needsLinkCarry ||
              roomManager.needsCreepProduction('builder') ||
@@ -106,6 +113,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('carry') ||
              roomManager.needsCreepProduction('containerCarry') ||
              roomManager.needsCreepProduction('storageCarry') ||
+             needsMiner ||
              needsClaimer;
     }
   }
@@ -289,6 +297,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       case ROLE_NAMES.CLAIMER:
         const claimer = new Claimer(creep);
         claimer.work();
+        break;
+      case ROLE_NAMES.MINER:
+        const miner = new Miner(creep);
+        miner.harvest();
         break;
     }
   }

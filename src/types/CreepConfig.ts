@@ -5,6 +5,7 @@ export interface CreepConfig {
   maxCount: number;
   priority: number;
   needLength?: number; // 需要长度
+  storagePriority?: number; // Storage存储优先级（用于矿物等特殊资源）
 }
 
 export interface CreepProductionResult {

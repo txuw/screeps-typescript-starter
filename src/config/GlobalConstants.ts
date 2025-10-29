@@ -10,6 +10,7 @@ export const ROLE_NAMES = {
     STORAGE_CARRY: 'storageCarry',
     LINK_CARRY: 'linkCarry',
     CLAIMER: 'claimer',
+    MINER: 'miner',
 } as const;
 
 // 全局算法参数
@@ -69,6 +70,22 @@ export const GLOBAL_ALGORITHM_CONFIG = {
         CLAIM_RANGE: 1,              // claimController范围
         RESERVATION_TICKS_PER_PART: 1, // 每个CLAIM部件每tick增加的预定时间
         DECCELERATION_TICKS_PER_PART: 300, // 每个CLAIM部件每tick加速的降级时间
+    },
+
+    // 矿物采集者相关配置
+    MINER_CONFIG: {
+        MOVE_PARTS: 6,               // MOVE部件数量
+        CARRY_PARTS: 6,              // CARRY部件数量
+        WORK_PARTS: 8,               // WORK部件数量
+        MINERAL_THRESHOLD: 1000,     // 开始采集的最小矿物储量
+        STORAGE_PRIORITY: 10,        // Storage存储优先级
+        COOLDOWN_TICKS: 5,           // 采集冷却时间
+        // 矿物存储结构优先级，数字越小优先级越高
+        STRUCTURE_PRIORITY: {
+            [STRUCTURE_STORAGE]: 0,      // Storage优先级最高
+            [STRUCTURE_CONTAINER]: 1,    // Container次之
+            [STRUCTURE_TERMINAL]: 2,     // Terminal可选
+        },
     },
 } as const;
 
