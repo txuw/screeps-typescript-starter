@@ -14,10 +14,10 @@ export class LinkCarry {
 
   // 转移优先级 - 主要转移到Storage
   transferPriority: { [structureType: string]: number } = {
-    [STRUCTURE_STORAGE]: 0,
-    [STRUCTURE_SPAWN]: 1,
-    [STRUCTURE_EXTENSION]: 2,
-    [STRUCTURE_TOWER]: 3
+    [STRUCTURE_STORAGE]: 3,
+    [STRUCTURE_SPAWN]: 0,
+    [STRUCTURE_EXTENSION]: 1,
+    [STRUCTURE_TOWER]: 2
   };
 
   constructor(creep: Creep) {
@@ -131,8 +131,7 @@ export class LinkCarry {
     // 从Container或Storage提取能量
     const targets = this.creep.room.find(FIND_STRUCTURES, {
       filter: structure => {
-        if (structure.structureType === STRUCTURE_CONTAINER ||
-            structure.structureType === STRUCTURE_STORAGE) {
+        if (structure.structureType === STRUCTURE_STORAGE) {
 
           const store = structure as any;
           return store.store.getUsedCapacity(RESOURCE_ENERGY) >

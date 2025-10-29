@@ -32,13 +32,13 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.STORAGE_CARRY,
         body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
-        maxCount: 1,
+        maxCount: 0,
         priority: 5,
-        needLength: 1,
+        needLength: 0,
     },
     {
         role: ROLE_NAMES.CARRY,
-        body: [MOVE, CARRY, WORK],
+        body: [MOVE,MOVE, CARRY, CARRY, MOVE, CARRY],
         maxCount: 1,
         priority: 1, // 调整优先级，作为基础容错搬运
         needLength: 1,
@@ -46,7 +46,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.UPGRADER,
         body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-        maxCount: 2,
+        maxCount: 1,
         priority: 4,
         needLength: 1,
     },
@@ -193,4 +193,4 @@ const w1n1Config = createRoomConfig('W1N1', {
 });
 
 // 导出配置，根据RCL进行调整
-export const W1N1_CONFIG = adjustConfigByRCL(w1n1Config, 5); // 假设为高级RCL房间
+export const W1N1_CONFIG = adjustConfigByRCL(w1n1Config, 6); // 假设为高级RCL房间

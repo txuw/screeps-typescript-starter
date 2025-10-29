@@ -87,5 +87,5 @@ export const GLOBAL_ROOM_THRESHOLDS = {
     MID_GAME_RCL: 6,
 
     // 状态检查间隔
-    STATE_CHECK_INTERVAL_DEFAULT: 20,
+    STATE_CHECK_INTERVAL_DEFAULT: 10,
 } as const;

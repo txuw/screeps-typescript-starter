@@ -7,8 +7,8 @@ export class Carry {
 
   // 能量存储结构优先级映射表（withdraw目标），数字越小优先级越高
   withdrawPriority: { [key: string]: number } = {
-    [STRUCTURE_STORAGE]: 0,
-    [STRUCTURE_CONTAINER]: 1,
+    [STRUCTURE_STORAGE]: 1,
+    [STRUCTURE_CONTAINER]: 0,
     [STRUCTURE_LINK]: 2  // 支持从Link提取，但优先级最低
   };
 
