@@ -68,21 +68,6 @@ export class ConfigLoader {
     }
 
     /**
-     * 更新房间配置
-     */
-    public updateRoomConfig(roomName: string, newConfig: Partial<RoomConfig>): void {
-        const currentConfig = this.getRoomConfig(roomName);
-        const updatedConfig = { ...currentConfig, ...newConfig };
-
-        this.configCache.set(roomName, updatedConfig);
-
-        // 保存到内存
-        this.saveConfigToMemory(roomName, updatedConfig);
-
-        console.log(`[ConfigLoader] 已更新房间 ${roomName} 的配置`);
-    }
-
-    /**
      * 重新加载配置
      */
     public reloadConfig(roomName: string): RoomConfig {
@@ -251,22 +236,6 @@ export class ConfigLoader {
             }
         });
     }
-
-    /**
-     * 保存配置到内存
-     */
-    private saveConfigToMemory(roomName: string, config: RoomConfig): void {
-        if (!Memory.rooms) {
-            Memory.rooms = {};
-        }
-        if (!Memory.rooms[roomName]) {
-            Memory.rooms[roomName] = {};
-        }
-
-        Memory.rooms[roomName].config = config;
-        Memory.rooms[roomName].configVersion = (Memory.rooms[roomName].configVersion || 0) + 1;
-    }
-
     /**
      * 清理配置缓存
      */

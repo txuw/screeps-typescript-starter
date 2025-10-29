@@ -15,7 +15,6 @@ import {GameCacheManager} from "./utils/GameCacheManager";
 import { ConfigLoader } from "./config/ConfigLoader";
 import { RoomManager } from "./manager/RoomManager";
 import { ROLE_NAMES } from "./config/GlobalConstants";
-import "./types/GlobalTypes"; // 导入扩展的全局类型定义
 
 declare global {
   namespace NodeJS {
