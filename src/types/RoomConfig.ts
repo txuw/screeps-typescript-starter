@@ -103,6 +103,32 @@ export interface RoomConfig {
             claimed?: boolean;
         }>;
         enableClaiming?: boolean;
+
+        // 跨房间建造配置
+        buildTargets?: Array<{
+            roomName: string;
+            priority: number;
+            requiredStructures: StructureConstant[];
+            status: 'pending' | 'in_progress' | 'completed';
+            assignedCreeps?: string[];
+        }>;
+
+        // 跨房间升级配置
+        upgradeTargets?: Array<{
+            roomName: string;
+            priority: number;
+            targetRCL: number;
+            currentRCL: number;
+            active: boolean;
+            assignedCreeps?: string[];
+            stopWhenSpawnBuilt: boolean;
+        }>;
+
+        // 跨房间creep配置
+        maxCrossRoomBuilders?: number;
+        maxCrossRoomUpgraders?: number;
+        crossRoomEnabled?: boolean;
+        minEnergyForCrossRoom?: number;
     };
 
     // 特殊配置

@@ -36,7 +36,7 @@ export class Miner {
       // 前往采集mineral
       if (this.creep.pos.isNearTo(mineral)) {
         const result = this.creep.harvest(mineral);
-        if (result !== OK && result !== ERR_NOT_ENOUGH_RESOURCES) {
+        if (result !== OK && result !== ERR_NOT_ENOUGH_RESOURCES && result !== ERR_TIRED) {
           console.log(`Failed to harvest mineral: ${result}`);
         }
       } else {

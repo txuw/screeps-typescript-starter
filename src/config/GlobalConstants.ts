@@ -11,6 +11,8 @@ export const ROLE_NAMES = {
     LINK_CARRY: 'linkCarry',
     CLAIMER: 'claimer',
     MINER: 'miner',
+    CROSS_ROOM_BUILDER: 'crossRoomBuilder',
+    CROSS_ROOM_UPGRADER: 'crossRoomUpgrader',
 } as const;
 
 // 全局算法参数
@@ -86,6 +88,47 @@ export const GLOBAL_ALGORITHM_CONFIG = {
             [STRUCTURE_CONTAINER]: 1,    // Container次之
             [STRUCTURE_TERMINAL]: 2,     // Terminal可选
         },
+    },
+
+    // 跨房间相关配置
+    CROSS_ROOM_CONFIG: {
+        // 跨房间Builder配置
+        BUILDER_BODY: {
+            MOVE: 12,                 // MOVE部件数量 - 高移动性
+            CARRY: 6,                 // CARRY部件数量 - 足够的容量
+            WORK: 6,                  // WORK部件数量 - 高效建造
+        },
+        // 跨房间Upgrader配置
+        UPGRADER_BODY: {
+            MOVE: 10,                 // MOVE部件数量
+            CARRY: 8,                 // CARRY部件数量 - 更多容量携带能量
+            WORK: 6,                  // WORK部件数量 - 高效升级
+        },
+        // 跨房间相关参数
+        MAX_TRAVEL_TIME: 300,        // 最大旅行时间
+        MIN_ENERGY_FOR_CROSS_ROOM: 1000, // 跨房间任务最小能量要求
+        BUILDER_SPAWN_PRIORITY: 1,   // Builder建造优先级 (Spawn最高)
+        UPGRADER_MIN_RCL: 1,         // Upgrader最低目标RCL
+        // 建造优先级 - Spawn最重要
+        BUILD_PRIORITIES: {
+            [STRUCTURE_SPAWN]: 0,       // Spawn最高优先级
+            [STRUCTURE_EXTENSION]: 1,   // Extension次之
+            [STRUCTURE_CONTAINER]: 2,   // Container
+            [STRUCTURE_ROAD]: 3,        // Road
+            [STRUCTURE_TOWER]: 4,       // Tower
+            [STRUCTURE_STORAGE]: 5,     // Storage
+            [STRUCTURE_LINK]: 6,        // Link
+            [STRUCTURE_WALL]: 7,        // Wall
+            [STRUCTURE_RAMPART]: 8,     // Rampart
+            [STRUCTURE_OBSERVER]: 9,    // Observer
+            [STRUCTURE_POWER_SPAWN]: 10, // Power Spawn
+            [STRUCTURE_EXTRACTOR]: 11,  // Extractor
+            [STRUCTURE_LAB]: 12,        // Lab
+            [STRUCTURE_TERMINAL]: 13,   // Terminal
+            [STRUCTURE_NUKER]: 14,      // Nuker
+            [STRUCTURE_FACTORY]: 15,    // Factory
+            [STRUCTURE_POWER_BANK]: 16, // Power Bank
+        } as const,
     },
 } as const;
 

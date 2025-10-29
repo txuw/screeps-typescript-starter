@@ -1,6 +1,7 @@
 import { CreepConfig, CreepProductionResult } from "../types/CreepConfig";
 import { ROLE_NAMES } from "../config/GlobalConstants";
 import { ClaimerUtils } from "../utils/ClaimerUtils";
+import { CrossRoomUtils } from "../utils/CrossRoomUtils";
 
 export class CreepFactory {
   private static instance: CreepFactory;
@@ -93,6 +94,16 @@ export class CreepFactory {
       bodyParts = ClaimerUtils.generateClaimerBody(spawn.room.energyCapacityAvailable);
     }
 
+    // 跨房间建造者特殊处理：动态生成身体配置
+    if (config.role === ROLE_NAMES.CROSS_ROOM_BUILDER && bodyParts.length === 0) {
+      bodyParts = CrossRoomUtils.generateCrossRoomBuilderBody(spawn.room.energyCapacityAvailable);
+    }
+
+    // 跨房间升级者特殊处理：动态生成身体配置
+    if (config.role === ROLE_NAMES.CROSS_ROOM_UPGRADER && bodyParts.length === 0) {
+      bodyParts = CrossRoomUtils.generateCrossRoomUpgraderBody(spawn.room.energyCapacityAvailable);
+    }
+
     const result = spawn.spawnCreep(bodyParts, creepName, {
       memory: {
         role: config.role,
@@ -139,7 +150,6 @@ export class CreepFactory {
 
     for (const config of sortedConfigs) {
       const currentCount = this.getCurrentCreepCount(config.role);
-
       // 检查是否需要生产
       if (currentCount < config.maxCount) {
         // 探索者特殊检查：确保有足够能量
@@ -148,9 +158,19 @@ export class CreepFactory {
             continue; // 能量不足，跳过此配置
           }
         }
-
+        // 跨房间建造者特殊检查：确保有足够能量
+        if (config.role === ROLE_NAMES.CROSS_ROOM_BUILDER) {
+          if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(spawn.room, 'builder')) {
+            continue; // 能量不足，跳过此配置
+          }
+        }
+        // 跨房间升级者特殊检查：确保有足够能量
+        if (config.role === ROLE_NAMES.CROSS_ROOM_UPGRADER) {
+          if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(spawn.room, 'upgrader')) {
+            continue; // 能量不足，跳过此配置
+          }
+        }
         const result = this.produceCreep(config);
-
         // 如果生产成功或者是因为资源不足外的其他原因失败，返回结果
         if (result.success || (!result.error?.includes("busy") && !result.error?.includes("Maximum count"))) {
           return result;

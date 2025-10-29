@@ -8,6 +8,8 @@ import {StorageCarry} from "./role/StorageCarry";
 import {LinkCarry} from "./role/LinkCarry";
 import {Claimer} from "./role/Claimer";
 import {Miner} from "./role/Miner";
+import {CrossRoomBuilder} from "./role/CrossRoomBuilder";
+import {CrossRoomUpgrader} from "./role/CrossRoomUpgrader";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {LinkManager} from "./manager/LinkManager";
@@ -17,6 +19,7 @@ import { ConfigLoader } from "./config/ConfigLoader";
 import { RoomManager } from "./manager/RoomManager";
 import { ROLE_NAMES } from "./config/GlobalConstants";
 import { MineralUtils } from "./utils/MineralUtils";
+import { CrossRoomUtils } from "./utils/CrossRoomUtils";
 
 declare global {
   namespace NodeJS {
@@ -55,6 +58,12 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
   const needsMiner = MineralUtils.shouldBuildMiner(roomManager.getRoom()) &&
                      roomManager.needsCreepProduction('miner');
 
+  // 检查是否需要跨房间建造者
+  const needsCrossRoomBuilder = shouldProduceCrossRoomBuilder(roomManager);
+
+  // 检查是否需要跨房间升级者
+  const needsCrossRoomUpgrader = shouldProduceCrossRoomUpgrader(roomManager);
+
   // 紧急状态：只生产采集者保证基本运转
   if (roomState === 'emergency') {
     return needsHarvester;
@@ -85,7 +94,8 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
            roomManager.needsCreepProduction('carry') ||
            roomManager.needsCreepProduction('containerCarry') ||
            needsMiner ||
-           needsClaimer;
+           needsCrossRoomBuilder ||
+           needsCrossRoomUpgrader;
   }
 
   // 正常状态：根据RCL决定生产策略
@@ -100,10 +110,14 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
       // 中期RCL：平衡发展
       return needsHarvester ||
              needsLinkCarry ||
+             needsMiner ||
+             needsClaimer ||
              roomManager.needsCreepProduction('builder') ||
              roomManager.needsCreepProduction('upgrader') ||
              roomManager.needsCreepProduction('carry') ||
-             roomManager.needsCreepProduction('containerCarry');
+             roomManager.needsCreepProduction('containerCarry') ||
+             needsCrossRoomBuilder ||
+             needsCrossRoomUpgrader;
     } else {
       // 高级RCL：全面发展，包括探索者和矿物采集者
       return needsHarvester ||
@@ -114,12 +128,91 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('containerCarry') ||
              roomManager.needsCreepProduction('storageCarry') ||
              needsMiner ||
-             needsClaimer;
+             needsClaimer ||
+             needsCrossRoomBuilder ||
+             needsCrossRoomUpgrader;
     }
   }
 
   // 默认：如果需要采集者就生产
   return needsHarvester;
+}
+
+/**
+ * 判断是否需要生产跨房间建造者
+ */
+function shouldProduceCrossRoomBuilder(roomManager: RoomManager): boolean {
+  const room = roomManager.getRoom();
+  const config = roomManager.getConfig();
+  // 检查跨房间功能是否启用
+  if (!config.crossRoomConfig?.crossRoomEnabled) {
+    return false;
+  }
+
+  // 检查是否有足够能量
+  if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(room, 'builder')) {
+    return false;
+  }
+
+  // 检查是否已达到最大数量
+  const currentCrossRoomBuilders = Object.values(Game.creeps).filter(
+    creep => creep.memory.role === ROLE_NAMES.CROSS_ROOM_BUILDER &&
+             creep.memory.homeRoom === room.name
+  ).length;
+
+  const maxCrossRoomBuilders = config.crossRoomConfig.maxCrossRoomBuilders || 0;
+  if (currentCrossRoomBuilders >= maxCrossRoomBuilders) {
+    return false;
+  }
+
+  // 检查是否有建造目标
+  const buildTargets = config.crossRoomConfig.buildTargets || [];
+  const activeTargets = buildTargets.filter(target =>
+    (target.status === 'pending' || target.status === 'in_progress') &&
+    CrossRoomUtils.needsSpawn(target.roomName)
+  );
+  console.log(activeTargets);
+  return activeTargets.length > 0;
+}
+
+/**
+ * 判断是否需要生产跨房间升级者
+ */
+function shouldProduceCrossRoomUpgrader(roomManager: RoomManager): boolean {
+  const room = roomManager.getRoom();
+  const config = roomManager.getConfig();
+
+  // 检查跨房间功能是否启用
+  if (!config.crossRoomConfig?.crossRoomEnabled) {
+    return false;
+  }
+
+  // 检查是否有足够能量
+  if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(room, 'upgrader')) {
+    return false;
+  }
+
+  // 检查是否已达到最大数量
+  const currentCrossRoomUpgraders = Object.values(Game.creeps).filter(
+    creep => creep.memory.role === ROLE_NAMES.CROSS_ROOM_UPGRADER &&
+             creep.memory.homeRoom === room.name
+  ).length;
+
+  const maxCrossRoomUpgraders = config.crossRoomConfig.maxCrossRoomUpgraders || 0;
+  if (currentCrossRoomUpgraders >= maxCrossRoomUpgraders) {
+    return false;
+  }
+
+  // 检查是否有升级目标
+  const upgradeTargets = config.crossRoomConfig.upgradeTargets || [];
+  const activeTargets = upgradeTargets.filter(target =>
+    target.active &&
+    target.currentRCL < target.targetRCL &&
+    CrossRoomUtils.needsUpgrade(target.roomName, target.targetRCL) &&
+    (!target.stopWhenSpawnBuilt || CrossRoomUtils.needsSpawn(target.roomName))
+  );
+
+  return activeTargets.length > 0;
 }
 
 // 初始化函数
@@ -301,6 +394,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
       case ROLE_NAMES.MINER:
         const miner = new Miner(creep);
         miner.harvest();
+        break;
+      case ROLE_NAMES.CROSS_ROOM_BUILDER:
+        const crossRoomBuilder = new CrossRoomBuilder(creep);
+        crossRoomBuilder.build();
+        break;
+      case ROLE_NAMES.CROSS_ROOM_UPGRADER:
+        const crossRoomUpgrader = new CrossRoomUpgrader(creep);
+        crossRoomUpgrader.upgrade();
         break;
     }
   }

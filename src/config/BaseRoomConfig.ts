@@ -69,6 +69,22 @@ export const BASE_CREEP_CONFIGS: CreepConfig[] = [
         priority: 4, // 中等优先级
         needLength: 1,
     },
+    // 跨房间建造者
+    {
+        role: ROLE_NAMES.CROSS_ROOM_BUILDER,
+        body: [], // 将由CrossRoomUtils.generateCrossRoomBuilderBody动态生成
+        maxCount: 0, // 默认关闭，按需配置
+        priority: 3, // 较高优先级
+        needLength: 1,
+    },
+    // 跨房间升级者
+    {
+        role: ROLE_NAMES.CROSS_ROOM_UPGRADER,
+        body: [], // 将由CrossRoomUtils.generateCrossRoomUpgraderBody动态生成
+        maxCount: 0, // 默认关闭，按需配置
+        priority: 2, // 较高优先级
+        needLength: 1,
+    },
 ];
 
 // 基础房间配置模板
@@ -197,6 +213,16 @@ export const BASE_ROOM_CONFIG: Omit<RoomConfig, 'roomName'> = {
         maxSharedCreeps: 2,
         claimTargets: [], // 将在具体房间配置中设置目标房间
         enableClaiming: false, // 默认关闭，在需要时启用
+
+        // 跨房间建造配置
+        buildTargets: [], // 将在具体房间配置中设置建造目标
+        upgradeTargets: [], // 将在具体房间配置中设置升级目标
+
+        // 跨房间creep配置
+        maxCrossRoomBuilders: 0, // 默认关闭
+        maxCrossRoomUpgraders: 0, // 默认关闭
+        crossRoomEnabled: false, // 默认关闭跨房间功能
+        minEnergyForCrossRoom: GLOBAL_ALGORITHM_CONFIG.CROSS_ROOM_CONFIG.MIN_ENERGY_FOR_CROSS_ROOM,
     },
 
     // 特殊配置
@@ -225,7 +251,7 @@ export function adjustConfigByRCL(config: RoomConfig, rcl: number): RoomConfig {
         // 早期RCL：减少高级creep，增加基础采集
         adjustedConfig.creepProduction.stateBasedConfigs[RoomState.NORMAL]?.creepConfigs.forEach(creepConfig => {
             if (creepConfig.role === ROLE_NAMES.HARVESTER) {
-                creepConfig.maxCount = Math.max(creepConfig.maxCount, 5);
+                creepConfig.maxCount = Math.max(creepConfig.maxCount, 1);
             } else if (creepConfig.role === ROLE_NAMES.STORAGE_CARRY) {
                 creepConfig.maxCount = 0; // 早期不需要存储运输
             }
