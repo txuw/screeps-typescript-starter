@@ -39,18 +39,19 @@ export class Upgrader {
    * 否则直接从 Source 采集
    */
   private getResources(sources: Array<Source>) {
-    var hasCarry = CreepUtils.hasCarry();
+    var homeroom = this.creep.memory.homeRoom
+    var hasCarry = CreepUtils.hasCarryByRoom(homeroom);
 
     if (hasCarry) {
       // 有 Carry 角色时，从存储容器获取资源
       var success = CreepUtils.withdrawFromStorage(this.creep, this.storagePriority, { stroke: '#ffaa00' });
       if (!success) {
         // 如果没有可用的存储结构，回退到直接采集
-        CreepUtils.harvestFromSource(this.creep, sources, 1, { stroke: '#ffaa00' });
+        CreepUtils.harvestFromSource(this.creep, sources, 0, { stroke: '#ffaa00' });
       }
     } else {
       // 没有 Carry 角色时，直接从 Source 采集
-      CreepUtils.harvestFromSource(this.creep, sources, 1, { stroke: '#ffaa00' });
+      CreepUtils.harvestFromSource(this.creep, sources, 0, { stroke: '#ffaa00' });
     }
   }
 }

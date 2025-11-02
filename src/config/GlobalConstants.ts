@@ -59,7 +59,7 @@ export const GLOBAL_ALGORITHM_CONFIG = {
         TRANSFER_COST: 0.03,         // 传输能量消耗比例 (3%)
         COOLDOWN: 1,                 // 传输冷却时间
         TRANSFER_RANGE: 2,           // 传输范围
-        MIN_ENERGY_TO_TRANSFER: 100, // 最小传输能量
+        MIN_ENERGY_TO_TRANSFER: 0, // 最小传输能量
         STORAGE_LINK_THRESHOLD: 0.7, // Storage Link传输阈值
         SOURCE_LINK_THRESHOLD: 0.5,  // Source Link传输阈值
     },
@@ -79,7 +79,7 @@ export const GLOBAL_ALGORITHM_CONFIG = {
         MOVE_PARTS: 6,               // MOVE部件数量
         CARRY_PARTS: 6,              // CARRY部件数量
         WORK_PARTS: 8,               // WORK部件数量
-        MINERAL_THRESHOLD: 1000,     // 开始采集的最小矿物储量
+        MINERAL_THRESHOLD: 1,     // 开始采集的最小矿物储量
         STORAGE_PRIORITY: 10,        // Storage存储优先级
         COOLDOWN_TICKS: 5,           // 采集冷却时间
         // 矿物存储结构优先级，数字越小优先级越高

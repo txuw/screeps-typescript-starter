@@ -48,10 +48,8 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
   // 检查房间是否有Link网络需要LinkCarry
   const needsLinkCarry = roomManager.hasWorkForLinkCarry() &&
                          roomManager.needsCreepProduction('linkCarry');
-
   // 检查是否需要探索者（仅在GCL达到6级且有占领目标时）
-  const needsClaimer = Game.gcl.level >= 6 &&
-                       roomManager.hasClaimTargets() &&
+  const needsClaimer = roomManager.hasClaimTargets() &&
                        roomManager.needsCreepProduction('claimer');
 
   // 检查是否需要矿物采集者（仅在有EXTRACTOR和矿物储量时）
@@ -171,7 +169,6 @@ function shouldProduceCrossRoomBuilder(roomManager: RoomManager): boolean {
     (target.status === 'pending' || target.status === 'in_progress') &&
     CrossRoomUtils.needsSpawn(target.roomName)
   );
-  console.log(activeTargets);
   return activeTargets.length > 0;
 }
 
@@ -295,7 +292,7 @@ function runRoomManager(roomName: string): void {
 
   // 智能生产决策：检查是否需要生产creep
   if (shouldProduceCreeps(roomManager)) {
-    const productionResult = creepFactory.greedyProduction(creepConfigs);
+    const productionResult = creepFactory.greedyProduction(creepConfigs, roomName);
 
     if (productionResult.success) {
       console.log(`[${roomName}] Successfully spawned ${productionResult.creepName} (${roomManager.getCurrentState()})`);

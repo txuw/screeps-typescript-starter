@@ -337,7 +337,7 @@ export class LinkManager {
         }
 
         const energy = linkInfo.link.store.getUsedCapacity(RESOURCE_ENERGY);
-        return energy > this.config.minEnergyToTransfer;
+        return energy >= this.config.minEnergyToTransfer;
       })
       .map(linkInfo => linkInfo.link);
     return linksNeedingCarry;

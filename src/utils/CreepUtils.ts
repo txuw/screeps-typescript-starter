@@ -1,4 +1,5 @@
 import { CommonConstant } from "../common/CommonConstant";
+import { ROLE_NAMES } from "../config/GlobalConstants";
 
 export class CreepUtils {
   /**
@@ -16,12 +17,27 @@ export class CreepUtils {
     return false;
   }
 
+  static hasRoleByRoom(role: string,homeRoom: string): boolean {
+
+    for (var creepName in Game.creeps) {
+      var creep = Game.creeps[creepName];
+      if (creep.memory.role === role && creep.room.name === homeRoom) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * 检查场上是否存在 Carry 角色
    * @returns 是否存在 Carry 角色
    */
   static hasCarry(): boolean {
     return this.hasRole(CommonConstant.CARRY) || this.hasRole(CommonConstant.CONTAINER_CARRY)  ;
+  }
+
+  static hasCarryByRoom(homeRoom: string): boolean {
+    return this.hasRoleByRoom(CommonConstant.CARRY,homeRoom) || this.hasRoleByRoom(CommonConstant.CONTAINER_CARRY,homeRoom)  ;
   }
 
   /**
@@ -34,7 +50,7 @@ export class CreepUtils {
     var targets = creep.room.find(FIND_STRUCTURES, {
       filter: structure => {
         // 只考虑有存储容量且有能量的结构
-        if ("store" in structure) {
+        if ("store" in structure && structure.structureType !== STRUCTURE_SPAWN && structure.structureType !== STRUCTURE_EXTENSION && structure.structureType !== STRUCTURE_TOWER) {
           var store = structure as any;
           return store.store[RESOURCE_ENERGY] > 0;
         }

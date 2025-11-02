@@ -53,6 +53,23 @@ export class CreepFactory {
   }
 
   /**
+   * 按房间统计当前指定角色的creep数量（基于homeRoom）
+   * @param role 角色名称
+   * @param roomName 房间名称
+   * @returns 当前房间该角色creep的数量
+   */
+  public getCurrentCreepCountByRoom(role: string, roomName: string): number {
+    let count = 0;
+    for (const creepName in Game.creeps) {
+      const creep = Game.creeps[creepName];
+      if (creep.memory.role === role && creep.memory.homeRoom === roomName) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /**
    * 生产单个creep
    * @param config creep配置
    * @returns 生产结果
@@ -135,53 +152,105 @@ export class CreepFactory {
    * @param configs creep配置列表
    * @returns 生产结果
    */
-  public greedyProduction(configs: CreepConfig[]): CreepProductionResult {
+  public greedyProduction(configs: CreepConfig[], roomName: string): CreepProductionResult {
+    // 在目标房间中选择Spawn（优先空闲）
+    const spawnsInRoom = Object.values(Game.spawns).filter(s => s.room.name === roomName);
+    const spawn = spawnsInRoom.find(s => !s.spawning) || spawnsInRoom[0];
+    if (!spawn) {
+      return { success: false, error: `No spawn in room ${roomName}` };
+    }
+
     // 按优先级排序（数字越小优先级越高）
     const sortedConfigs = [...configs].sort((a, b) => a.priority - b.priority);
 
-    // 获取spawn对象
-    const spawn = Game.spawns[this.spawnName];
-    if (!spawn) {
-      return {
-        success: false,
-        error: `Spawn ${this.spawnName} not found`
-      };
-    }
-
     for (const config of sortedConfigs) {
-      const currentCount = this.getCurrentCreepCount(config.role);
-      // 检查是否需要生产
-      if (currentCount < config.maxCount) {
-        // 探索者特殊检查：确保有足够能量
-        if (config.role === ROLE_NAMES.CLAIMER) {
-          if (!ClaimerUtils.hasEnoughEnergy(spawn.room)) {
-            continue; // 能量不足，跳过此配置
-          }
+      const currentCount = this.getCurrentCreepCountByRoom(config.role, roomName);
+      if (currentCount >= config.maxCount) {
+        continue;
+      }
+
+      // 探索者特殊检查：确保有足够能量
+      if (config.role === ROLE_NAMES.CLAIMER) {
+        if (!ClaimerUtils.hasEnoughEnergy(spawn.room)) {
+          continue; // 能量不足，跳过此配置
         }
-        // 跨房间建造者特殊检查：确保有足够能量
-        if (config.role === ROLE_NAMES.CROSS_ROOM_BUILDER) {
-          if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(spawn.room, 'builder')) {
-            continue; // 能量不足，跳过此配置
-          }
+      }
+      // 跨房间建造者特殊检查：确保有足够能量
+      if (config.role === ROLE_NAMES.CROSS_ROOM_BUILDER) {
+        if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(spawn.room, 'builder')) {
+          continue; // 能量不足，跳过此配置
         }
-        // 跨房间升级者特殊检查：确保有足够能量
-        if (config.role === ROLE_NAMES.CROSS_ROOM_UPGRADER) {
-          if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(spawn.room, 'upgrader')) {
-            continue; // 能量不足，跳过此配置
-          }
+      }
+      // 跨房间升级者特殊检查：确保有足够能量
+      if (config.role === ROLE_NAMES.CROSS_ROOM_UPGRADER) {
+        if (!CrossRoomUtils.hasEnoughEnergyForCrossRoom(spawn.room, 'upgrader')) {
+          continue; // 能量不足，跳过此配置
         }
-        const result = this.produceCreep(config);
-        // 如果生产成功或者是因为资源不足外的其他原因失败，返回结果
-        if (result.success || (!result.error?.includes("busy") && !result.error?.includes("Maximum count"))) {
-          return result;
-        }
+      }
+
+      const result = this.produceCreepForSpawn(config, spawn);
+      if (result.success || (!result.error?.includes("busy") && !result.error?.includes("Maximum count"))) {
+        return result;
       }
     }
 
-    return {
-      success: false,
-      error: "All creep types are at maximum capacity"
-    };
+    return { success: false, error: `All creep types are at maximum capacity in ${roomName}` };
+  }
+
+  /**
+   * 按指定spawn生产creep（homeRoom绑定到spawn房间）
+   */
+  private produceCreepForSpawn(config: CreepConfig, spawn: StructureSpawn): CreepProductionResult {
+    if (!spawn) {
+      return { success: false, error: `Spawn not found` };
+    }
+
+    // 检查当前数量是否已达上限（按房间）
+    const currentCount = this.getCurrentCreepCountByRoom(config.role, spawn.room.name);
+    if (currentCount >= config.maxCount) {
+      return {
+        success: false,
+        error: `Maximum count (${config.maxCount}) reached for role ${config.role} in ${spawn.room.name}`
+      };
+    }
+
+    // 检查spawn是否正在生产
+    if (spawn.spawning) {
+      return { success: false, error: `Spawn is currently busy` };
+    }
+
+    // 生成creep名称
+    const creepName = this.generateCreepName(config.role);
+
+    // 确定身体配置
+    let bodyParts = config.body || config.bodyParts || [];
+
+    if (config.role === ROLE_NAMES.CLAIMER && bodyParts.length === 0) {
+      bodyParts = ClaimerUtils.generateClaimerBody(spawn.room.energyCapacityAvailable);
+    }
+    if (config.role === ROLE_NAMES.CROSS_ROOM_BUILDER && bodyParts.length === 0) {
+      bodyParts = CrossRoomUtils.generateCrossRoomBuilderBody(spawn.room.energyCapacityAvailable);
+    }
+    if (config.role === ROLE_NAMES.CROSS_ROOM_UPGRADER && bodyParts.length === 0) {
+      bodyParts = CrossRoomUtils.generateCrossRoomUpgraderBody(spawn.room.energyCapacityAvailable);
+    }
+
+    const result = spawn.spawnCreep(bodyParts, creepName, {
+      memory: {
+        role: config.role,
+        room: spawn.room.name,
+        homeRoom: spawn.room.name,
+        working: false,
+        upgrading: false,
+        building: false,
+        targetSourceId: undefined
+      }
+    });
+
+    if (result === OK) {
+      return { success: true, creepName };
+    }
+    return { success: false, error: `Failed to spawn creep: ${result}` };
   }
 
   /**

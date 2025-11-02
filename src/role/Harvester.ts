@@ -1,6 +1,8 @@
 import { CommonConstant } from "../common/CommonConstant";
 import { CreepUtils } from "../utils/CreepUtils";
 import { SourceUtils } from "../utils/SourceUtils";
+import { ROLE_NAMES } from "../config/GlobalConstants";
+import { CarryUtils } from "../utils/CarryUtils";
 
 export class Harvester {
   creep: Creep
@@ -70,9 +72,25 @@ export class Harvester {
    * 否则使用原有的优先级逻辑
    */
   private transferEnergy() {
-    // 检查是否存在 Carry 角色
-    const hasCarry = CreepUtils.hasCarry();
+    // 目标房间为creep的homeRoom（若无则为当前房间）
+    const homeRoomName = this.creep.memory.homeRoom || this.creep.room.name;
 
+    // 不在homeRoom则优先回家再进行能量转移
+    if (this.creep.room.name !== homeRoomName) {
+      const homeRoom = Game.rooms[homeRoomName];
+      if (homeRoom) {
+        const spawn = homeRoom.find(FIND_MY_SPAWNS)[0];
+        const targetPos = spawn ? spawn.pos : new RoomPosition(25, 25, homeRoomName);
+        this.creep.moveTo(targetPos, { visualizePathStyle: { stroke: '#ffffff' } });
+      } else {
+        // 若暂未可见homeRoom，则朝homeRoom中央移动
+        this.creep.moveTo(new RoomPosition(25, 25, homeRoomName), { visualizePathStyle: { stroke: '#ffffff' } });
+      }
+      return;
+    }
+
+    // 仅统计同一homeRoom内是否存在Carry角色
+    const hasCarry = CreepUtils.hasCarryByRoom(homeRoomName);
     if (hasCarry) {
       // 有 Carry 角色时，只转移到 Container
       this.transferToContainer();
@@ -158,11 +176,14 @@ export class Harvester {
    * 使用SourceUtils的通用排序方法
    */
   private transferWithPriority() {
+
     // 统一查找所有需要能量的结构
     const targets = this.creep.room.find(FIND_STRUCTURES, {
       filter: structure => {
+
         // 只考虑有存储容量且需要能量的结构
-        if ("store" in structure) {
+        if ("store" in structure ) {
+
           const store = structure as any;
           return store.store[RESOURCE_ENERGY] < store.store.getCapacity(RESOURCE_ENERGY);
         }

@@ -267,7 +267,7 @@ export class Carry {
     return this.creep.room.find(FIND_STRUCTURES, {
       filter: structure => {
         // 只考虑有存储容量且有能量的结构
-        if (!("store" in structure)) {
+        if (!("store" in structure && structure.structureType !== STRUCTURE_SPAWN)) {
           return false;
         }
 

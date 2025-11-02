@@ -40,13 +40,13 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.CARRY,
         body: [MOVE,MOVE, CARRY, CARRY, MOVE, CARRY],
-        maxCount: 1,
+        maxCount: 2,
         priority: 1, // 调整优先级，作为基础容错搬运
         needLength: 1,
     },
     {
         role: ROLE_NAMES.UPGRADER,
-        body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
+        body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
         maxCount: 1,
         priority: 4,
         needLength: 1,
@@ -77,7 +77,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
       role: ROLE_NAMES.CROSS_ROOM_BUILDER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomBuilderBody动态生成
-      maxCount: 1, // 默认关闭，按需配置
+      maxCount: 0, // 默认关闭，按需配置
       priority: 3, // 较高优先级
       needLength: 1,
     },
@@ -85,7 +85,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
       role: ROLE_NAMES.CROSS_ROOM_UPGRADER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomUpgraderBody动态生成
-      maxCount: 1, // 默认关闭，按需配置
+      maxCount: 0, // 默认关闭，按需配置
       priority: 2, // 较高优先级
       needLength: 1,
     },
@@ -108,7 +108,7 @@ const w1n1Config = createRoomConfig('W1N1', {
             [RoomState.DEVELOPING]: {
                 creepConfigs: W1N1_CREEP_CONFIGS.map(config => {
                     if (config.role === ROLE_NAMES.BUILDER) {
-                        return { ...config, maxCount: 2 }; // 发展状态增加建造者
+                        return { ...config, maxCount: 1 }; // 发展状态增加建造者
                     }
                     return config;
                 }),
@@ -205,15 +205,15 @@ const w1n1Config = createRoomConfig('W1N1', {
         sharingPriority: 1,
         maxSharedCreeps: 3,
         claimTargets: [
-            // {
-            //     roomName: 'W2N1',
-            //     x: 7,
-            //     y: 11,
-            //     priority: 1,
-            //     claimed: false,
-            // },
+            {
+                roomName: 'W2N1',
+                x: 7,
+                y: 11,
+                priority: 1,
+                claimed: false,
+            },
         ],
-        enableClaiming: true,
+        enableClaiming: false,
 
         // 跨房间建造配置
         buildTargets: [

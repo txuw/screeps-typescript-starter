@@ -67,9 +67,6 @@ export class CrossRoomBuilder {
         const availableTargets = roomConfig.crossRoomConfig.buildTargets.filter(target =>
             target.status === 'pending' || target.status === 'in_progress'
         );
-      for (let availableTarget of availableTargets) {
-        console.log(availableTarget.status)
-      }
         if (availableTargets.length === 0) {
             console.log(`[CrossRoomBuilder] ${this.creep.name} 房间 ${homeRoom} 没有可用的建造目标`);
             return null;

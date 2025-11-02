@@ -5,8 +5,8 @@ export class Builder {
 
   // 结构类型优先级映射表，数字越小优先级越高
   structurePriority: { [key: string]: number } = {
-    [STRUCTURE_CONTAINER]: 1,
-    [STRUCTURE_EXTENSION]: 0,
+    [STRUCTURE_CONTAINER]: 0,
+    [STRUCTURE_EXTENSION]: 1,
     [STRUCTURE_RAMPART]: 4,
     [STRUCTURE_ROAD]: 3,
     [STRUCTURE_LINK]: 5,
@@ -68,7 +68,8 @@ export class Builder {
    * 否则直接从 Source 采集
    */
   private getResources(sources: Array<Source>) {
-    var hasCarry = CreepUtils.hasCarry();
+    var homeroom = this.creep.memory.homeRoom
+    var hasCarry = CreepUtils.hasCarryByRoom(homeroom);
 
     if (hasCarry) {
       // 有 Carry 角色时，从存储容器获取资源

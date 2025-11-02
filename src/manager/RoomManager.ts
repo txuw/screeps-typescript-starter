@@ -2,6 +2,7 @@ import { RoomConfig } from '../types/RoomConfig';
 import { RoomState, RoomStatusInfo, RoomDevelopmentStage } from '../types/RoomState';
 import { CreepConfig } from '../types/CreepConfig';
 import { LinkManager } from './LinkManager';
+import { ROLE_NAMES } from "../config/GlobalConstants";
 
 /**
  * RoomManager - 管理单个房间的配置、状态和操作
@@ -125,11 +126,9 @@ export class RoomManager {
         const roomCreeps = this.getRoomCreeps();
         const roleCreeps = roomCreeps.filter(creep => creep.memory.role === role);
         const creepConfig = this.getCurrentCreepConfigs().find(config => config.role === role);
-
         if (!creepConfig) {
             return false;
         }
-
         return roleCreeps.length < creepConfig.maxCount;
     }
 
@@ -268,9 +267,9 @@ export class RoomManager {
         const thresholds = this.config.stateConfig.thresholds;
 
         // 紧急状态：能量极低
-        if (energyPercentage < thresholds.emergencyEnergyThreshold / 100) {
-            return RoomState.EMERGENCY;
-        }
+        // if (energyPercentage < thresholds.emergencyEnergyThreshold / 100) {
+        //     return RoomState.EMERGENCY;
+        // }
 
         // 攻击状态：有敌人
         if (hasEnemy) {
@@ -278,9 +277,9 @@ export class RoomManager {
         }
 
         // 低能量状态
-        if (energyPercentage < thresholds.lowEnergyThreshold / 100) {
-            return RoomState.LOW_ENERGY;
-        }
+        // if (energyPercentage < thresholds.lowEnergyThreshold / 100) {
+        //     return RoomState.LOW_ENERGY;
+        // }
 
         // 发展状态：有建筑工地
         if (constructionSites > thresholds.maxConstructionSites) {

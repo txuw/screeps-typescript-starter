@@ -8,17 +8,17 @@ import { MineralUtils } from '../../utils/MineralUtils';
  * W1N1房间配置 - 迁移自原有CommonConstant配置
  * 保持与原有配置一致的行为
  */
-const W1N1_CREEP_CONFIGS: CreepConfig[] = [
+const W2N1_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.HARVESTER,
-    body: [MOVE, CARRY, CARRY, WORK],
+    body: [MOVE,CARRY,CARRY,CARRY,CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
     maxCount: 1,
-    priority: 0,
+    priority: 1,
     needLength: 2,
   },
   {
     role: ROLE_NAMES.LINK_CARRY,
-    body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
+    body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
     maxCount: 1,
     priority: 0, // 最高优先级，确保Link能量及时搬运
     needLength: 1,
@@ -39,22 +39,22 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
   },
   {
     role: ROLE_NAMES.CARRY,
-    body: [MOVE,MOVE, CARRY, CARRY, MOVE, CARRY],
-    maxCount: 0,
-    priority: 1, // 调整优先级，作为基础容错搬运
+    body: [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY],
+    maxCount: 1,
+    priority: 0, // 调整优先级，作为基础容错搬运
     needLength: 1,
   },
   {
     role: ROLE_NAMES.UPGRADER,
-    body: [MOVE, MOVE, CARRY, CARRY, WORK],
-    maxCount: 1,
+    body: [MOVE, MOVE, MOVE, MOVE,CARRY,CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK],
+    maxCount: 2,
     priority: 4,
     needLength: 1,
   },
   {
     role: ROLE_NAMES.BUILDER,
-    body: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-    maxCount: 1,
+    body: [MOVE, MOVE, MOVE, MOVE,CARRY,CARRY, WORK, WORK, WORK, WORK, WORK],
+    maxCount: 0,
     priority: 7, // 调整优先级，在Miner和StorageCarry之后
     needLength: 0,
   },
@@ -92,7 +92,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
 ];
 
 // 创建W1N1的基础配置
-const w1n1Config = createRoomConfig('W2N2', {
+const w1n1Config = createRoomConfig('W2N1', {
   priority: 1, // 主要房间，高优先级
 
   // 覆盖creep生产配置以匹配原有行为
@@ -102,20 +102,26 @@ const w1n1Config = createRoomConfig('W2N2', {
     productionPriority: 1,
     stateBasedConfigs: {
       [RoomState.NORMAL]: {
-        creepConfigs: W1N1_CREEP_CONFIGS,
+        creepConfigs: W2N1_CREEP_CONFIGS.map(config=>{
+          return config;
+        }),
         productionStrategy: 'balanced',
       },
       [RoomState.DEVELOPING]: {
-        creepConfigs: W1N1_CREEP_CONFIGS.map(config => {
+
+        creepConfigs: W2N1_CREEP_CONFIGS.map(config => {
           if (config.role === ROLE_NAMES.BUILDER) {
-            return { ...config, maxCount: 2 }; // 发展状态增加建造者
+            return { ...config, maxCount: 1 }; // 发展状态增加建造者
+          }
+          if (config.role === ROLE_NAMES.UPGRADER) {
+            return { ...config, maxCount: 1 }; // 发展状态增加建造者
           }
           return config;
         }),
         productionStrategy: 'aggressive',
       },
       [RoomState.LOW_ENERGY]: {
-        creepConfigs: W1N1_CREEP_CONFIGS.filter(config =>
+        creepConfigs: W2N1_CREEP_CONFIGS.filter(config =>
           config.role === ROLE_NAMES.HARVESTER ||
           config.role === ROLE_NAMES.CARRY ||
           config.role === ROLE_NAMES.CONTAINER_CARRY
@@ -123,7 +129,7 @@ const w1n1Config = createRoomConfig('W2N2', {
         productionStrategy: 'conservative',
       },
       [RoomState.UNDER_ATTACK]: {
-        creepConfigs: W1N1_CREEP_CONFIGS.filter(config =>
+        creepConfigs: W2N1_CREEP_CONFIGS.filter(config =>
           config.role === ROLE_NAMES.HARVESTER ||
           config.role === ROLE_NAMES.CARRY ||
           config.role === ROLE_NAMES.CONTAINER_CARRY
@@ -131,7 +137,7 @@ const w1n1Config = createRoomConfig('W2N2', {
         productionStrategy: 'conservative',
       },
       [RoomState.EMERGENCY]: {
-        creepConfigs: W1N1_CREEP_CONFIGS.filter(config =>
+        creepConfigs: W2N1_CREEP_CONFIGS.filter(config =>
           config.role === ROLE_NAMES.HARVESTER
         ).map(config => ({ ...config, maxCount: 1 })),
         productionStrategy: 'conservative',
@@ -141,7 +147,7 @@ const w1n1Config = createRoomConfig('W2N2', {
 
   // 启用塔防，使用原配置的房间名
   towerConfig: {
-    enabled: false,
+    enabled: true,
     repairThreshold: 0.8,
     defenseMode: {
       enabled: true,
