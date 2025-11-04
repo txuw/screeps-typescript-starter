@@ -63,7 +63,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
         body: [], // 将由ClaimerUtils.generateClaimerBody动态生成
         maxCount: 0,
         priority: 4, // 中等优先级
-        needLength: 0,
+        needLength: 1,
     },
     {
         role: ROLE_NAMES.MINER,
@@ -77,9 +77,9 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
       role: ROLE_NAMES.CROSS_ROOM_BUILDER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomBuilderBody动态生成
-      maxCount: 0, // 默认关闭，按需配置
+      maxCount: 3, // 默认关闭，按需配置
       priority: 3, // 较高优先级
-      needLength: 1,
+      needLength: 3,
     },
     // 跨房间升级者
     {
@@ -206,9 +206,9 @@ const w1n1Config = createRoomConfig('W1N1', {
         maxSharedCreeps: 3,
         claimTargets: [
             {
-                roomName: 'W2N1',
-                x: 7,
-                y: 11,
+                roomName: 'W2N2',
+                x: 26,
+                y: 16,
                 priority: 1,
                 claimed: false,
             },
@@ -218,16 +218,16 @@ const w1n1Config = createRoomConfig('W1N1', {
         // 跨房间建造配置
         buildTargets: [
           {
-            roomName: 'W2N1',
+            roomName: 'W2N2',
             priority: 1,
-            requiredStructures: [STRUCTURE_SPAWN],
+            requiredStructures: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTAINER],
             status: 'pending',
             assignedCreeps: []
           }
         ], // 将在具体房间配置中设置建造目标
         upgradeTargets: [
           {
-            roomName: 'W2N1',
+            roomName: 'W2N2',
             priority: 1,
             targetRCL: 4,
             currentRCL: 1,
@@ -238,7 +238,7 @@ const w1n1Config = createRoomConfig('W1N1', {
         ], // 将在具体房间配置中设置升级目标
 
         // 跨房间creep配置
-        maxCrossRoomBuilders: 1,
+        maxCrossRoomBuilders: 3,
         maxCrossRoomUpgraders: 1,
         crossRoomEnabled: true,
         minEnergyForCrossRoom: 1000,

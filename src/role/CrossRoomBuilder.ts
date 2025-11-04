@@ -61,12 +61,18 @@ export class CrossRoomBuilder {
             return null;
         }
       for (let buildTarget of roomConfig.crossRoomConfig.buildTargets) {
+        console.log(buildTarget)
         console.log(`[CrossRoomBuilder] buildTarget.status ${buildTarget.status}`);
       }
+
         // 找到第一个进行中或待处理的目标
-        const availableTargets = roomConfig.crossRoomConfig.buildTargets.filter(target =>
-            target.status === 'pending' || target.status === 'in_progress'
+        const availableTargets = roomConfig.crossRoomConfig.buildTargets.filter(target =>{
+            console.log("target   : "+target.roomName +"   requiredStructures: "+target.requiredStructures+" status: "+target.status);
+            return target.status === 'pending' || target.status === 'in_progress'
+        }
+
         );
+      console.log(`[CrossRoomBuilder] ${availableTargets.length} available targets`);
         if (availableTargets.length === 0) {
             console.log(`[CrossRoomBuilder] ${this.creep.name} 房间 ${homeRoom} 没有可用的建造目标`);
             return null;
@@ -243,11 +249,11 @@ export class CrossRoomBuilder {
      */
     private performBuildTask(targetRoom: { roomName: string }): void {
         // 首先检查Spawn是否已经建成（可能被其他creep建成）
-        if (this.isSpawnAlreadyBuilt()) {
-            this.updateTaskStatusToCompleted();
-            console.log(`[CrossRoomBuilder] ${this.creep.name} 发现房间 ${this.creep.room.name} 的Spawn已经建成，更新任务状态`);
-            return;
-        }
+        // if (this.isSpawnAlreadyBuilt()) {
+        //     this.updateTaskStatusToCompleted();
+        //     console.log(`[CrossRoomBuilder] ${this.creep.name} 发现房间 ${this.creep.room.name} 的Spawn已经建成，更新任务状态`);
+        //     return;
+        // }
 
         // 检查能量状态 - 只有完全没能量才去采集
         if (this.creep.memory.building && this.creep.store.getUsedCapacity() === 0) {
