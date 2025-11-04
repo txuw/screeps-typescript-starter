@@ -188,7 +188,26 @@ export class CrossRoomBuilder {
         if (this.creep.store.getUsedCapacity() < this.creep.store.getCapacity()) {
             // 前往目标采集点采集资源
             if (targetSource) {
-                if (this.creep.harvest(targetSource) === ERR_NOT_IN_RANGE) {
+                // 检查当前采集点是否还有能量
+                if (targetSource.energy === 0) {
+                    console.log(`[CrossRoomBuilder] ${this.creep.name} 当前采集点 ${targetSource.id} 能量耗尽，切换采集点`);
+
+                    // 寻找其他有能量的采集点
+                    const availableSources = sources.filter(source => source.energy > 0);
+
+                    if (availableSources.length > 0) {
+                        // 重新分配有能量的采集点
+                        this.assignOptimalSource(availableSources);
+                        targetSource = Game.getObjectById(this.creep.memory.targetSourceId as Id<Source>);
+                        console.log(`[CrossRoomBuilder] ${this.creep.name} 切换到新采集点: ${targetSource?.id}`);
+                    } else {
+                        // 所有采集点都没有能量，等待能量恢复
+                        this.creep.say('⏳ waiting');
+                        return;
+                    }
+                }
+
+                if (targetSource && this.creep.harvest(targetSource) === ERR_NOT_IN_RANGE) {
                     this.creep.moveTo(targetSource, { visualizePathStyle: { stroke: '#ffaa00' } });
                 }
                 this.creep.say('⛏️ harvesting');
