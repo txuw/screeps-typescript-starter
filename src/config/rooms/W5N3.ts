@@ -8,20 +8,20 @@ import { MineralUtils } from '../../utils/MineralUtils';
  * W1N1房间配置 - 迁移自原有CommonConstant配置
  * 保持与原有配置一致的行为
  */
-const W2N2_CREEP_CONFIGS: CreepConfig[] = [
+const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.HARVESTER,
-    body: [MOVE,CARRY,CARRY,CARRY,CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-    maxCount: 2,
-    priority: 1,
-    needLength: 2,
+    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK, WORK, WORK],
+    maxCount: 4,
+    priority: 0,
+    needLength: 3,
   },
   {
     role: ROLE_NAMES.LINK_CARRY,
     body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
-    maxCount: 1,
+    maxCount: 0,
     priority: 0, // 最高优先级，确保Link能量及时搬运
-    needLength: 1,
+    needLength: 0,
   },
   {
     role: ROLE_NAMES.CONTAINER_CARRY,
@@ -40,20 +40,20 @@ const W2N2_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.CARRY,
     body: [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY],
-    maxCount: 2,
+    maxCount: 4,
     priority: 0, // 调整优先级，作为基础容错搬运
     needLength: 1,
   },
   {
     role: ROLE_NAMES.UPGRADER,
-    body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,  WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-    maxCount: 2,
-    priority: 4,
-    needLength: 1,
+    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK,CARRY, WORK, WORK, WORK],
+    maxCount: 3,
+    priority: 3,
+    needLength: 3,
   },
   {
     role: ROLE_NAMES.BUILDER,
-    body: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
+    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK,CARRY, WORK, WORK, WORK],
     maxCount: 0,
     priority: 7, // 调整优先级，在Miner和StorageCarry之后
     needLength: 0,
@@ -68,7 +68,7 @@ const W2N2_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.MINER,
     body: MineralUtils.generateMinerBody(),
-    maxCount: 1,
+    maxCount: 0,
     priority: 5, // Upgrader之后，StorageCarry之前
     needLength: 1,
     storagePriority: GLOBAL_ALGORITHM_CONFIG.MINER_CONFIG.STORAGE_PRIORITY,
@@ -92,7 +92,7 @@ const W2N2_CREEP_CONFIGS: CreepConfig[] = [
 ];
 
 // 创建W1N1的基础配置
-const w2n21Config = createRoomConfig('W2N2', {
+const W5N3Config = createRoomConfig('W5N3', {
   priority: 1, // 主要房间，高优先级
 
   // 覆盖creep生产配置以匹配原有行为
@@ -102,16 +102,16 @@ const w2n21Config = createRoomConfig('W2N2', {
     productionPriority: 1,
     stateBasedConfigs: {
       [RoomState.NORMAL]: {
-        creepConfigs: W2N2_CREEP_CONFIGS.map(config=>{
+        creepConfigs: W5N3_CREEP_CONFIGS.map(config=>{
           return config;
         }),
         productionStrategy: 'balanced',
       },
       [RoomState.DEVELOPING]: {
 
-        creepConfigs: W2N2_CREEP_CONFIGS.map(config => {
+        creepConfigs: W5N3_CREEP_CONFIGS.map(config => {
           if (config.role === ROLE_NAMES.BUILDER) {
-            return { ...config, maxCount: 2 }; // 发展状态增加建造者
+            return { ...config, maxCount: 3 }; // 发展状态增加建造者
           }
           if (config.role === ROLE_NAMES.UPGRADER) {
             return { ...config, maxCount: 1 }; // 发展状态增加建造者
@@ -121,7 +121,7 @@ const w2n21Config = createRoomConfig('W2N2', {
         productionStrategy: 'aggressive',
       },
       [RoomState.LOW_ENERGY]: {
-        creepConfigs: W2N2_CREEP_CONFIGS.filter(config =>
+        creepConfigs: W5N3_CREEP_CONFIGS.filter(config =>
           config.role === ROLE_NAMES.HARVESTER ||
           config.role === ROLE_NAMES.CARRY ||
           config.role === ROLE_NAMES.CONTAINER_CARRY
@@ -129,7 +129,7 @@ const w2n21Config = createRoomConfig('W2N2', {
         productionStrategy: 'conservative',
       },
       [RoomState.UNDER_ATTACK]: {
-        creepConfigs: W2N2_CREEP_CONFIGS.filter(config =>
+        creepConfigs: W5N3_CREEP_CONFIGS.filter(config =>
           config.role === ROLE_NAMES.HARVESTER ||
           config.role === ROLE_NAMES.CARRY ||
           config.role === ROLE_NAMES.CONTAINER_CARRY
@@ -137,7 +137,7 @@ const w2n21Config = createRoomConfig('W2N2', {
         productionStrategy: 'conservative',
       },
       [RoomState.EMERGENCY]: {
-        creepConfigs: W2N2_CREEP_CONFIGS.filter(config =>
+        creepConfigs: W5N3_CREEP_CONFIGS.filter(config =>
           config.role === ROLE_NAMES.HARVESTER
         ).map(config => ({ ...config, maxCount: 1 })),
         productionStrategy: 'conservative',
@@ -232,4 +232,4 @@ const w2n21Config = createRoomConfig('W2N2', {
 });
 
 // 导出配置，根据RCL进行调整
-export const W2N2_CONFIG = adjustConfigByRCL(w2n21Config, 2); // 假设为高级RCL房间
+export const W5N3_CONFIG = adjustConfigByRCL(W5N3Config, 2); // 假设为高级RCL房间
