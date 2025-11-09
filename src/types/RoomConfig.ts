@@ -1,6 +1,14 @@
 import { RoomState, RoomDevelopmentStage } from './RoomState';
 import { CreepConfig } from './CreepConfig';
 
+export interface TerminalConfig {
+    resourceType: ResourceConstant;
+    amount: string;
+    targetRoom: string;
+    desc: string;
+    count: string;
+}
+
 export interface RoomCreepProduction {
     enabled: boolean;
     maxTotalCreeps: number;
@@ -129,6 +137,12 @@ export interface RoomConfig {
         maxCrossRoomUpgraders?: number;
         crossRoomEnabled?: boolean;
         minEnergyForCrossRoom?: number;
+    };
+
+    // Terminal配置
+    terminalConfig: {
+        enabled: boolean;
+        terminalConfigs: TerminalConfig[];
     };
 
     // 特殊配置

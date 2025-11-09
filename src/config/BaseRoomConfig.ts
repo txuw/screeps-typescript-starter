@@ -1,4 +1,4 @@
-import { RoomConfig } from '../types/RoomConfig';
+import { RoomConfig, TerminalConfig } from '../types/RoomConfig';
 import { CreepConfig } from '../types/CreepConfig';
 import { GLOBAL_ALGORITHM_CONFIG, GLOBAL_ROOM_THRESHOLDS, ROLE_NAMES } from './GlobalConstants';
 import { RoomState } from '../types/RoomState';
@@ -223,6 +223,12 @@ export const BASE_ROOM_CONFIG: Omit<RoomConfig, 'roomName'> = {
         maxCrossRoomUpgraders: 0, // 默认关闭
         crossRoomEnabled: false, // 默认关闭跨房间功能
         minEnergyForCrossRoom: GLOBAL_ALGORITHM_CONFIG.CROSS_ROOM_CONFIG.MIN_ENERGY_FOR_CROSS_ROOM,
+    },
+
+    // Terminal配置
+    terminalConfig: {
+        enabled: false, // 默认关闭
+        terminalConfigs: [], // 默认为空数组
     },
 
     // 特殊配置

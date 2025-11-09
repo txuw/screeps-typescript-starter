@@ -3,6 +3,7 @@ import { ROLE_NAMES, GLOBAL_ALGORITHM_CONFIG } from '../GlobalConstants';
 import { CreepConfig } from '../../types/CreepConfig';
 import { RoomState } from '../../types/RoomState';
 import { MineralUtils } from '../../utils/MineralUtils';
+import { TerminalCarry } from '../../role/TerminalCarry';
 
 /**
  * W1N1房间配置 - 迁移自原有CommonConstant配置
@@ -47,7 +48,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.UPGRADER,
         body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,  WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-        maxCount: 1,
+        maxCount: 2,
         priority: 4,
         needLength: 1,
     },
@@ -87,6 +88,14 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
       body: [], // 将由CrossRoomUtils.generateCrossRoomUpgraderBody动态生成
       maxCount: 0, // 默认关闭，按需配置
       priority: 2, // 较高优先级
+      needLength: 1,
+    },
+    // Terminal搬运者
+    {
+      role: ROLE_NAMES.TERMINAL_CARRY,
+      body: TerminalCarry.generateTerminalCarryBody(),
+      maxCount: 1,
+      priority: 5, // 中等优先级，在基础creep之后
       needLength: 1,
     },
 ];
@@ -244,6 +253,21 @@ const w1n1Config = createRoomConfig('W1N1', {
         minEnergyForCrossRoom: 1000,
 
     },
+
+    // Terminal配置 - 为W1N1添加terminal管理
+    terminalConfig: {
+        enabled: true,
+        terminalConfigs: [
+            {
+                resourceType: RESOURCE_ENERGY,
+                amount: "100000",
+                targetRoom: "W2N1",
+                desc: "向W2N1发送能量支援",
+                count: "2"
+            }
+        ]
+    },
+
 });
 
 // 导出配置，根据RCL进行调整

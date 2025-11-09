@@ -3,6 +3,7 @@ import { ROLE_NAMES, GLOBAL_ALGORITHM_CONFIG } from '../GlobalConstants';
 import { CreepConfig } from '../../types/CreepConfig';
 import { RoomState } from '../../types/RoomState';
 import { MineralUtils } from '../../utils/MineralUtils';
+import { TerminalCarry } from '../../role/TerminalCarry';
 
 /**
  * W1N1房间配置 - 迁移自原有CommonConstant配置
@@ -40,16 +41,16 @@ const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.CARRY,
     body: [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY],
-    maxCount: 4,
+    maxCount: 3,
     priority: 0, // 调整优先级，作为基础容错搬运
-    needLength: 1,
+    needLength: 3,
   },
   {
     role: ROLE_NAMES.UPGRADER,
     body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK,CARRY, WORK, WORK, WORK],
-    maxCount: 3,
+    maxCount: 5,
     priority: 3,
-    needLength: 3,
+    needLength: 5,
   },
   {
     role: ROLE_NAMES.BUILDER,
@@ -88,6 +89,14 @@ const W5N3_CREEP_CONFIGS: CreepConfig[] = [
     maxCount: 0, // 默认关闭，按需配置
     priority: 2, // 较高优先级
     needLength: 1,
+  },
+  // Terminal搬运者
+  {
+    role: ROLE_NAMES.TERMINAL_CARRY,
+    body: TerminalCarry.generateTerminalCarryBody(),
+    maxCount: 0,
+    priority: 5, // 中等优先级，在基础creep之后
+    needLength: 0,
   },
 ];
 
@@ -229,6 +238,13 @@ const W5N3Config = createRoomConfig('W5N3', {
     minEnergyForCrossRoom: 1000,
 
   },
+
+  // Terminal配置
+  terminalConfig: {
+    enabled: false, // 默认关闭
+    terminalConfigs: [], // 默认为空数组
+  },
+
 });
 
 // 导出配置，根据RCL进行调整

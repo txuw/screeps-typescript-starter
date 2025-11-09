@@ -10,6 +10,7 @@ import {Claimer} from "./role/Claimer";
 import {Miner} from "./role/Miner";
 import {CrossRoomBuilder} from "./role/CrossRoomBuilder";
 import {CrossRoomUpgrader} from "./role/CrossRoomUpgrader";
+import {TerminalCarry} from "./role/TerminalCarry";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {LinkManager} from "./manager/LinkManager";
@@ -61,6 +62,9 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
 
   // 检查是否需要跨房间升级者
   const needsCrossRoomUpgrader = shouldProduceCrossRoomUpgrader(roomManager);
+
+  // 检查是否需要Terminal搬运者
+  const needsTerminalCarry = shouldProduceTerminalCarry(roomManager);
 
   // 紧急状态：只生产采集者保证基本运转
   if (roomState === 'emergency') {
@@ -114,6 +118,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('upgrader') ||
              roomManager.needsCreepProduction('carry') ||
              roomManager.needsCreepProduction('containerCarry') ||
+              needsTerminalCarry ||
              needsCrossRoomBuilder ||
              needsCrossRoomUpgrader;
     } else {
@@ -125,6 +130,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('carry') ||
              roomManager.needsCreepProduction('containerCarry') ||
              roomManager.needsCreepProduction('storageCarry') ||
+             needsTerminalCarry ||
              needsMiner ||
              needsClaimer ||
              needsCrossRoomBuilder ||
@@ -249,7 +255,7 @@ function getRoomManager(roomName: string): RoomManager | null {
   }
 
   // 获取房间对象
-  const room = Game.rooms[roomName];
+  let room = Game.rooms[roomName];
   if (!room) {
     return null;
   }
@@ -314,6 +320,9 @@ function runRoomManager(roomName: string): void {
     const linkManager = LinkManager.getInstance();
     linkManager.manageRoomLinks(roomName);
   }
+
+  // 运行Terminal管理
+  roomManager.processTerminal();
 }
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -400,6 +409,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
         const crossRoomUpgrader = new CrossRoomUpgrader(creep);
         crossRoomUpgrader.upgrade();
         break;
+      case ROLE_NAMES.TERMINAL_CARRY:
+        const roomManager = getRoomManager(creep.room.name);
+        const terminalCarry = new TerminalCarry(creep, roomManager);
+        terminalCarry.work();
+        break;
     }
   }
 
@@ -428,4 +442,36 @@ export const loop = ErrorMapper.wrapLoop(() => {
     Memory.globalRoomManager.lastGlobalUpdate = Game.time;
   }
 });
+
+/**
+ * 判断是否需要生产Terminal搬运者
+ */
+function shouldProduceTerminalCarry(roomManager: RoomManager): boolean {
+  const room = roomManager.getRoom();
+
+  // 检查房间是否有Terminal
+  if (!room.terminal) {
+    return false;
+  }
+
+  // 检查房间是否有Storage
+  if (!room.storage) {
+    return false;
+  }
+
+  // 检查Terminal配置是否启用
+  const roomConfig = roomManager.getConfig();
+  if (!roomConfig.terminalConfig?.enabled) {
+    return false;
+  }
+
+  // 检查是否有Terminal配置
+  const terminalConfigs = roomConfig.terminalConfig.terminalConfigs;
+  if (!terminalConfigs || terminalConfigs.length === 0) {
+    return false;
+  }
+
+  // 检查是否需要TerminalCarry
+  return roomManager.needsCreepProduction('terminalCarry');
+}
 

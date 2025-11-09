@@ -3,6 +3,7 @@ import { ROLE_NAMES, GLOBAL_ALGORITHM_CONFIG } from '../GlobalConstants';
 import { CreepConfig } from '../../types/CreepConfig';
 import { RoomState } from '../../types/RoomState';
 import { MineralUtils } from '../../utils/MineralUtils';
+import { TerminalCarry } from "../../role/TerminalCarry";
 
 /**
  * W1N1房间配置 - 迁移自原有CommonConstant配置
@@ -87,6 +88,14 @@ const W2N2_CREEP_CONFIGS: CreepConfig[] = [
     body: [], // 将由CrossRoomUtils.generateCrossRoomUpgraderBody动态生成
     maxCount: 0, // 默认关闭，按需配置
     priority: 2, // 较高优先级
+    needLength: 1,
+  },
+  // Terminal搬运者
+  {
+    role: ROLE_NAMES.TERMINAL_CARRY,
+    body: TerminalCarry.generateTerminalCarryBody(),
+    maxCount: 1,
+    priority: 5, // 中等优先级，在基础creep之后
     needLength: 1,
   },
 ];
@@ -228,6 +237,20 @@ const w2n21Config = createRoomConfig('W2N2', {
     crossRoomEnabled: false,
     minEnergyForCrossRoom: 1000,
 
+  },
+
+  // Terminal配置
+  terminalConfig: {
+    enabled: true,
+    terminalConfigs: [
+      {
+        resourceType: RESOURCE_HYDROGEN,
+        amount: "10000",
+        targetRoom: "W1N1",
+        desc: "向W1N1发送H矿",
+        count: "2"
+      }
+    ]
   },
 });
 

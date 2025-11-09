@@ -2,6 +2,7 @@ import { RoomConfig } from '../types/RoomConfig';
 import { RoomState, RoomStatusInfo, RoomDevelopmentStage } from '../types/RoomState';
 import { CreepConfig } from '../types/CreepConfig';
 import { LinkManager } from './LinkManager';
+import { TerminalManager } from './TerminalManager';
 import { ROLE_NAMES } from "../config/GlobalConstants";
 
 /**
@@ -423,4 +424,17 @@ export class RoomManager {
         const claimTargets = this.config.crossRoomConfig?.claimTargets || [];
         return claimTargets.filter(target => !this.isTargetRoomClaimed(target.roomName));
     }
+
+    /**
+     * 处理Terminal操作
+     */
+    public processTerminal(): void {
+        if (!this.config.terminalConfig?.enabled) {
+            return;
+        }
+
+        let terminalManager = TerminalManager.getInstance();
+        terminalManager.processTerminal(this.room, this.config.terminalConfig.terminalConfigs);
+    }
+
 }
