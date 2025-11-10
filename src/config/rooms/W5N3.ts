@@ -47,8 +47,8 @@ const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   },
   {
     role: ROLE_NAMES.UPGRADER,
-    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK,CARRY, WORK, WORK, WORK],
-    maxCount: 5,
+    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK,CARRY, WORK,CARRY, WORK, WORK, WORK],
+    maxCount: 7,
     priority: 3,
     needLength: 5,
   },
