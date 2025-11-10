@@ -258,13 +258,13 @@ const w1n1Config = createRoomConfig('W1N1', {
     terminalConfig: {
         enabled: true,
         terminalConfigs: [
-            {
-                resourceType: RESOURCE_ENERGY,
-                amount: "100000",
-                targetRoom: "W2N1",
-                desc: "向W2N1发送能量支援",
-                count: "2"
-            }
+          {
+            resourceType: RESOURCE_LEMERGIUM,
+            amount: "200000",
+            targetRoom: "W2N2",
+            desc: "鲈鱼~快来呀~",
+            count: "1"
+          }
         ]
     },
 

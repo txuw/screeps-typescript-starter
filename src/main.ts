@@ -14,6 +14,7 @@ import {TerminalCarry} from "./role/TerminalCarry";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {LinkManager} from "./manager/LinkManager";
+import {TerminalManager} from "./manager/TerminalManager";
 import {SourceUtils} from "./utils/SourceUtils";
 import {GameCacheManager} from "./utils/GameCacheManager";
 import { ConfigLoader } from "./config/ConfigLoader";
@@ -465,13 +466,68 @@ function shouldProduceTerminalCarry(roomManager: RoomManager): boolean {
     return false;
   }
 
-  // 检查是否有Terminal配置
+  // 情况1：检查是否有Terminal配置资源需要搬运
   const terminalConfigs = roomConfig.terminalConfig.terminalConfigs;
+  const hasConfiguredResources = terminalConfigs && terminalConfigs.length > 0;
+
+  // 情况2：检查Terminal中是否有未配置的资源需要清理
+  const hasUnconfiguredResources = checkHasUnconfiguredResources(room.terminal, terminalConfigs || []);
+
+  // 只要有配置资源或未配置资源，就需要 TerminalCarry
+  if (hasConfiguredResources || hasUnconfiguredResources) {
+    return roomManager.needsCreepProduction('terminalCarry');
+  }
+
+  return false;
+}
+
+/**
+ * 检查Terminal中是否有需要清理的资源
+ * （包括未配置的资源和发送次数已满的配置资源）
+ */
+function checkHasUnconfiguredResources(terminal: StructureTerminal, terminalConfigs: any[]): boolean {
+  // 如果没有配置，检查是否有任何非能量资源
   if (!terminalConfigs || terminalConfigs.length === 0) {
+    for (const resourceType in terminal.store) {
+      const resource = resourceType as ResourceConstant;
+      const amount = terminal.store.getUsedCapacity(resource) || 0;
+      if (resource !== RESOURCE_ENERGY && amount > 0) {
+        return true;
+      }
+    }
     return false;
   }
 
-  // 检查是否需要TerminalCarry
-  return roomManager.needsCreepProduction('terminalCarry');
+  // 获取Terminal发送统计
+  const terminalManager = TerminalManager.getInstance();
+  const stats = terminalManager.getTerminalStats(terminal.room.name);
+
+  // 构建需要保留的资源集合（配置中且未达到发送次数上限）
+  const shouldKeepResources = new Set<ResourceConstant>();
+  for (const config of terminalConfigs) {
+    const resourceType = config.resourceType as ResourceConstant;
+    const targetRoom = config.targetRoom;
+    const maxCount = parseInt(config.count) || 10;
+
+    // 如果发送次数未满，保留该资源
+    if (!stats[targetRoom] || !stats[targetRoom][resourceType] || stats[targetRoom][resourceType] < maxCount) {
+      shouldKeepResources.add(resourceType);
+    }
+  }
+
+  // 检查Terminal中是否有需要清理的资源（排除能量和需要保留的）
+  for (const resourceType in terminal.store) {
+    const resource = resourceType as ResourceConstant;
+    const amount = terminal.store.getUsedCapacity(resource) || 0;
+
+    // 跳过能量和需要保留的资源
+    if (resource !== RESOURCE_ENERGY &&
+        amount > 0 &&
+        !shouldKeepResources.has(resource)) {
+      return true; // 发现需要清理的资源
+    }
+  }
+
+  return false;
 }
 

@@ -12,17 +12,17 @@ import { TerminalCarry } from '../../role/TerminalCarry';
 const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.HARVESTER,
-    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK, WORK, WORK],
-    maxCount: 4,
+    body: [MOVE,CARRY,CARRY,CARRY,CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
+    maxCount: 2,
     priority: 0,
     needLength: 3,
   },
   {
     role: ROLE_NAMES.LINK_CARRY,
     body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
-    maxCount: 0,
+    maxCount: 1,
     priority: 0, // 最高优先级，确保Link能量及时搬运
-    needLength: 0,
+    needLength: 1,
   },
   {
     role: ROLE_NAMES.CONTAINER_CARRY,
@@ -41,16 +41,16 @@ const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.CARRY,
     body: [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY],
-    maxCount: 3,
+    maxCount: 2,
     priority: 0, // 调整优先级，作为基础容错搬运
     needLength: 3,
   },
   {
     role: ROLE_NAMES.UPGRADER,
-    body: [MOVE,MOVE,MOVE,CARRY,CARRY, WORK,CARRY, WORK,CARRY, WORK, WORK, WORK],
-    maxCount: 7,
+    body: [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY, WORK,CARRY, WORK,CARRY, WORK, WORK, WORK, WORK, WORK, WORK],
+    maxCount: 9,
     priority: 3,
-    needLength: 5,
+    needLength: 9,
   },
   {
     role: ROLE_NAMES.BUILDER,

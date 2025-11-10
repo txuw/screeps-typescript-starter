@@ -10,9 +10,14 @@ interface TerminalMemory {
     [roomName: string]: TerminalSendRecord;
 }
 
+interface TerminalConfigIndex {
+    [roomName: string]: number;
+}
+
 declare global {
     interface Memory {
         terminalSends?: TerminalMemory;
+        terminalConfigIndex?: TerminalConfigIndex;
     }
 }
 
@@ -23,6 +28,9 @@ export class TerminalManager {
         // 初始化Memory结构
         if (!Memory.terminalSends) {
             Memory.terminalSends = {};
+        }
+        if (!Memory.terminalConfigIndex) {
+            Memory.terminalConfigIndex = {};
         }
     }
 
@@ -65,17 +73,65 @@ export class TerminalManager {
         if (!Memory.terminalSends) {
             Memory.terminalSends = {};
         }
+        if (!Memory.terminalConfigIndex) {
+            Memory.terminalConfigIndex = {};
+        }
 
         // 初始化该房间的Memory记录
         if (!Memory.terminalSends[currentRoom.name]) {
             Memory.terminalSends[currentRoom.name] = {};
         }
+        if (Memory.terminalConfigIndex[currentRoom.name] === undefined) {
+            Memory.terminalConfigIndex[currentRoom.name] = 0;
+        }
 
-        for (const config of terminalConfig) {
+        // 如果没有配置，返回
+        if (!terminalConfig || terminalConfig.length === 0) {
+            return;
+        }
+
+        // 获取当前配置下标
+        let currentIndex = Memory.terminalConfigIndex[currentRoom.name];
+
+        // 确保下标在有效范围内
+        if (currentIndex >= terminalConfig.length) {
+            currentIndex = 0;
+            Memory.terminalConfigIndex[currentRoom.name] = 0;
+        }
+
+        // 从当前下标开始遍历所有配置（轮换处理）
+        let checkedCount = 0;
+        const startIndex = currentIndex;
+
+        console.log(`[TerminalManager] ${currentRoom.name} 从配置下标 ${currentIndex} 开始检查`);
+
+        while (checkedCount < terminalConfig.length) {
+            const config = terminalConfig[currentIndex];
+
+            console.log(`[TerminalManager] 检查配置 ${currentIndex}: ${config.resourceType} -> ${config.targetRoom}`);
+
             if (this.shouldSendResource(currentRoom, config)) {
                 this.sendResource(terminal, config);
+
+                // 发送成功后，移动到下一个配置
+                currentIndex = (currentIndex + 1) % terminalConfig.length;
+                Memory.terminalConfigIndex[currentRoom.name] = currentIndex;
+                console.log(`[TerminalManager] 发送成功，下次将从配置下标 ${currentIndex} 开始处理`);
+
+                // Terminal每次只能发送一个资源，发送后退出
+                return;
             }
+
+            // 当前配置无法发送，移动到下一个配置继续检查
+            currentIndex = (currentIndex + 1) % terminalConfig.length;
+            checkedCount++;
         }
+
+        // 如果遍历完所有配置都无法发送，移动到下一个配置，避免下次再卡在同一个位置
+        // 使用起始位置 +1 作为下次的起点
+        const nextIndex = (startIndex + 1) % terminalConfig.length;
+        Memory.terminalConfigIndex[currentRoom.name] = nextIndex;
+        console.log(`[TerminalManager] ${currentRoom.name} 所有配置都无法发送，下次将从配置下标 ${nextIndex} 开始`);
     }
 
     /**
@@ -95,9 +151,7 @@ export class TerminalManager {
             console.log(`Terminal ${room.name} 发送 ${resourceType} 到 ${targetRoom} 已达到最大次数 ${maxCount}`);
             return false;
         }
-        // console.log(room.terminal)
-        // console.log(room.terminal?.store)
-        // console.log(room.terminal?.store.getUsedCapacity(resourceType))
+
         // 检查terminal是否有足够的资源
         const availableAmount = room.terminal?.store.getUsedCapacity(resourceType) || 0;
         const sendAmount = parseInt(config.amount) || 0;
@@ -107,19 +161,8 @@ export class TerminalManager {
             return false;
         }
 
-        // 检查targetRoom是否存在terminal
-        const targetRoomObj = Game.rooms[targetRoom];
-        if (!targetRoomObj || !targetRoomObj.terminal) {
-            console.log(`目标房间 ${targetRoom} 没有Terminal`);
-            return false;
-        }
-
-        // 检查目标terminal是否有足够空间
-        const targetFreeSpace = targetRoomObj.terminal.store.getFreeCapacity(resourceType);
-        if (targetFreeSpace < sendAmount) {
-            console.log(`目标房间 ${targetRoom} Terminal空间不足，需要 ${sendAmount}，可用 ${targetFreeSpace}`);
-            return false;
-        }
+        // 注意：不检查目标房间终端状态，因为对于非个人房间无法获取信息
+        // 如果发送失败，terminal.send 会返回错误码
 
         return true;
     }
@@ -221,5 +264,29 @@ export class TerminalManager {
         }
 
         return Memory.terminalSends[roomName];
+    }
+
+    /**
+     * 重置配置下标
+     * @param roomName 房间名
+     */
+    public resetConfigIndex(roomName: string): void {
+        if (!Memory.terminalConfigIndex) {
+            Memory.terminalConfigIndex = {};
+        }
+        Memory.terminalConfigIndex[roomName] = 0;
+        console.log(`[TerminalManager] ${roomName} 的配置下标已重置为 0`);
+    }
+
+    /**
+     * 获取当前配置下标
+     * @param roomName 房间名
+     * @returns 配置下标
+     */
+    public getConfigIndex(roomName: string): number {
+        if (!Memory.terminalConfigIndex || Memory.terminalConfigIndex[roomName] === undefined) {
+            return 0;
+        }
+        return Memory.terminalConfigIndex[roomName];
     }
 }
