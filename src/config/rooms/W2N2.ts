@@ -48,7 +48,7 @@ const W2N2_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.UPGRADER,
     body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,  WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-    maxCount: 1,
+    maxCount: 2,
     priority: 4,
     needLength: 1,
   },

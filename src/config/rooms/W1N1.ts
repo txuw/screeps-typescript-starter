@@ -48,7 +48,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.UPGRADER,
         body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,  WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-        maxCount: 1,
+        maxCount: 2,
         priority: 4,
         needLength: 1,
     },
@@ -96,6 +96,14 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
       body: TerminalCarry.generateTerminalCarryBody(),
       maxCount: 1,
       priority: 5, // 中等优先级，在基础creep之后
+      needLength: 1,
+    },
+    // Lab搬运者
+    {
+      role: ROLE_NAMES.LAB_CARRY,
+      body: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY],
+      maxCount: 1, // 默认关闭，启用Lab配置时设为1-2
+      priority: 6,
       needLength: 1,
     },
 ];
@@ -266,6 +274,21 @@ const w1n1Config = createRoomConfig('W1N1', {
             count: "1"
           }
         ]
+    },
+
+    // Lab配置 - Lab反应系统配置示例
+    // 使用前需要替换为实际的Lab ID
+    labConfig: {
+        enabled: true, // 默认关闭，需要手动启用并配置Lab ID
+        labs: {
+            // 示例配置 - 生成 UH2O 的反应链
+            // "69075e1cb6cfe3003b2e60d9": "UH2O",  // 产物Lab (OH + UH -> UH2O)
+            "6908c7fc5329a70039e86c0e": "UL",    // 材料Lab (H + O -> OH)
+            "6907548cb6cfe3003b2e6073": "LH",    // 材料Lab (U + H -> UH)
+            "6900d19eecdd1b0040221f08": "L",     // 基础材料Lab
+            "6900ccb060ceae003b3b7856": "H",     // 基础材料Lab
+            "6900c7f3ecdd1b0040221ed0": "U",     // 基础材料Lab
+        }
     },
 
 });

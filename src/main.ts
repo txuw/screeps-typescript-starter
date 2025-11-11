@@ -11,9 +11,11 @@ import {Miner} from "./role/Miner";
 import {CrossRoomBuilder} from "./role/CrossRoomBuilder";
 import {CrossRoomUpgrader} from "./role/CrossRoomUpgrader";
 import {TerminalCarry} from "./role/TerminalCarry";
+import {LabCarry} from "./role/LabCarry";
 import {CreepFactory} from "./factory/CreepFactory";
 import {TowerManager} from "./manager/TowerManager";
 import {LinkManager} from "./manager/LinkManager";
+import {LabManager} from "./manager/LabManager";
 import {TerminalManager} from "./manager/TerminalManager";
 import {SourceUtils} from "./utils/SourceUtils";
 import {GameCacheManager} from "./utils/GameCacheManager";
@@ -66,6 +68,9 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
 
   // 检查是否需要Terminal搬运者
   const needsTerminalCarry = shouldProduceTerminalCarry(roomManager);
+
+  // 检查是否需要Lab搬运者
+  const needsLabCarry = shouldProduceLabCarry(roomManager);
 
   // 紧急状态：只生产采集者保证基本运转
   if (roomState === 'emergency') {
@@ -132,6 +137,7 @@ function shouldProduceCreeps(roomManager: RoomManager): boolean {
              roomManager.needsCreepProduction('containerCarry') ||
              roomManager.needsCreepProduction('storageCarry') ||
              needsTerminalCarry ||
+             needsLabCarry ||
              needsMiner ||
              needsClaimer ||
              needsCrossRoomBuilder ||
@@ -322,6 +328,13 @@ function runRoomManager(roomName: string): void {
     linkManager.manageRoomLinks(roomName);
   }
 
+  // 运行Lab网络
+  const labConfig = roomManager.getConfig().labConfig;
+  if (labConfig && labConfig.enabled) {
+    const labManager = LabManager.getInstance();
+    labManager.manageRoomLabs(roomName);
+  }
+
   // 运行Terminal管理
   roomManager.processTerminal();
 }
@@ -414,6 +427,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
         const roomManager = getRoomManager(creep.room.name);
         const terminalCarry = new TerminalCarry(creep, roomManager);
         terminalCarry.work();
+        break;
+      case ROLE_NAMES.LAB_CARRY:
+        const labCarry = new LabCarry(creep);
+        labCarry.transport();
         break;
     }
   }
@@ -529,5 +546,41 @@ function checkHasUnconfiguredResources(terminal: StructureTerminal, terminalConf
   }
 
   return false;
+}
+
+/**
+ * 判断是否需要生产Lab搬运者
+ */
+function shouldProduceLabCarry(roomManager: RoomManager): boolean {
+  const room = roomManager.getRoom();
+
+  // 检查房间是否有Lab
+  const labs = room.find(FIND_MY_STRUCTURES, {
+    filter: (structure) => structure.structureType === STRUCTURE_LAB
+  });
+
+  if (labs.length === 0) {
+    return false;
+  }
+
+  // 检查房间是否有Storage
+  if (!room.storage) {
+    return false;
+  }
+
+  // 检查Lab配置是否启用
+  const roomConfig = roomManager.getConfig();
+  if (!roomConfig.labConfig || !roomConfig.labConfig.enabled) {
+    return false;
+  }
+
+  // 检查是否有Lab配置
+  const labConfig = roomConfig.labConfig.labs;
+  if (!labConfig || Object.keys(labConfig).length === 0) {
+    return false;
+  }
+
+  // 检查是否需要生产该角色的creep
+  return roomManager.needsCreepProduction('labCarry');
 }
 

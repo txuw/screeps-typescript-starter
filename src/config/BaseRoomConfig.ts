@@ -85,6 +85,14 @@ export const BASE_CREEP_CONFIGS: CreepConfig[] = [
         priority: 2, // 较高优先级
         needLength: 1,
     },
+    // Lab搬运者
+    {
+        role: ROLE_NAMES.LAB_CARRY,
+        body: [CARRY, CARRY, MOVE, MOVE],
+        maxCount: 0, // 默认关闭，在有Lab配置的房间启用
+        priority: 6,
+        needLength: 1,
+    },
 ];
 
 // 基础房间配置模板
@@ -229,6 +237,12 @@ export const BASE_ROOM_CONFIG: Omit<RoomConfig, 'roomName'> = {
     terminalConfig: {
         enabled: false, // 默认关闭
         terminalConfigs: [], // 默认为空数组
+    },
+
+    // Lab配置
+    labConfig: {
+        enabled: false, // 默认关闭
+        labs: {}, // 默认为空对象
     },
 
     // 特殊配置

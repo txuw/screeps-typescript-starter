@@ -59,13 +59,13 @@ export class TerminalManager {
         if (terminal.cooldown > 0) {
             // 只有在冷却时间较短时才打印日志，避免刷屏
             if (terminal.cooldown <= 3) {
-                console.log(`Terminal ${currentRoom.name} 冷却中，剩余 ${terminal.cooldown} tick`);
+                // console.log(`Terminal ${currentRoom.name} 冷却中，剩余 ${terminal.cooldown} tick`);
             }
             return;
         }
 
         if (terminal.store.getFreeCapacity() === 0) {
-            console.log(`Terminal ${currentRoom.name} 已满，跳过处理`);
+            // console.log(`Terminal ${currentRoom.name} 已满，跳过处理`);
             return;
         }
 
@@ -103,12 +103,12 @@ export class TerminalManager {
         let checkedCount = 0;
         const startIndex = currentIndex;
 
-        console.log(`[TerminalManager] ${currentRoom.name} 从配置下标 ${currentIndex} 开始检查`);
+        // console.log(`[TerminalManager] ${currentRoom.name} 从配置下标 ${currentIndex} 开始检查`);
 
         while (checkedCount < terminalConfig.length) {
             const config = terminalConfig[currentIndex];
 
-            console.log(`[TerminalManager] 检查配置 ${currentIndex}: ${config.resourceType} -> ${config.targetRoom}`);
+            // console.log(`[TerminalManager] 检查配置 ${currentIndex}: ${config.resourceType} -> ${config.targetRoom}`);
 
             if (this.shouldSendResource(currentRoom, config)) {
                 this.sendResource(terminal, config);
@@ -116,7 +116,7 @@ export class TerminalManager {
                 // 发送成功后，移动到下一个配置
                 currentIndex = (currentIndex + 1) % terminalConfig.length;
                 Memory.terminalConfigIndex[currentRoom.name] = currentIndex;
-                console.log(`[TerminalManager] 发送成功，下次将从配置下标 ${currentIndex} 开始处理`);
+                // console.log(`[TerminalManager] 发送成功，下次将从配置下标 ${currentIndex} 开始处理`);
 
                 // Terminal每次只能发送一个资源，发送后退出
                 return;
@@ -131,7 +131,7 @@ export class TerminalManager {
         // 使用起始位置 +1 作为下次的起点
         const nextIndex = (startIndex + 1) % terminalConfig.length;
         Memory.terminalConfigIndex[currentRoom.name] = nextIndex;
-        console.log(`[TerminalManager] ${currentRoom.name} 所有配置都无法发送，下次将从配置下标 ${nextIndex} 开始`);
+        // console.log(`[TerminalManager] ${currentRoom.name} 所有配置都无法发送，下次将从配置下标 ${nextIndex} 开始`);
     }
 
     /**
@@ -148,7 +148,7 @@ export class TerminalManager {
         // 检查是否已达到发送次数限制
         const currentCount = this.getSendCount(room.name, targetRoom, resourceType);
         if (currentCount >= maxCount) {
-            console.log(`Terminal ${room.name} 发送 ${resourceType} 到 ${targetRoom} 已达到最大次数 ${maxCount}`);
+            // console.log(`Terminal ${room.name} 发送 ${resourceType} 到 ${targetRoom} 已达到最大次数 ${maxCount}`);
             return false;
         }
 
@@ -157,7 +157,7 @@ export class TerminalManager {
         const sendAmount = parseInt(config.amount) || 0;
 
         if (availableAmount < sendAmount) {
-            console.log(`Terminal ${room.name} ${resourceType} 不足，需要 ${sendAmount}，可用 ${availableAmount}`);
+            // console.log(`Terminal ${room.name} ${resourceType} 不足，需要 ${sendAmount}，可用 ${availableAmount}`);
             return false;
         }
 
@@ -186,7 +186,7 @@ export class TerminalManager {
             this.incrementSendCount(terminal.room.name, targetRoom, resourceType);
             console.log(`Terminal ${terminal.room.name} 成功发送 ${amount} ${resourceType} 到 ${targetRoom}，描述：${description}`);
         } else {
-            console.log(`Terminal ${terminal.room.name} 发送失败，错误码：${result}`);
+            // console.log(`Terminal ${terminal.room.name} 发送失败，错误码：${result}`);
         }
     }
 
@@ -275,7 +275,7 @@ export class TerminalManager {
             Memory.terminalConfigIndex = {};
         }
         Memory.terminalConfigIndex[roomName] = 0;
-        console.log(`[TerminalManager] ${roomName} 的配置下标已重置为 0`);
+        // console.log(`[TerminalManager] ${roomName} 的配置下标已重置为 0`);
     }
 
     /**

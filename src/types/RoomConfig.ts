@@ -9,6 +9,11 @@ export interface TerminalConfig {
     count: string;
 }
 
+export interface LabConfig {
+    enabled: boolean;
+    labs: { [labId: string]: string }; // labId -> 要合成/存放的资源类型
+}
+
 export interface RoomCreepProduction {
     enabled: boolean;
     maxTotalCreeps: number;
@@ -144,6 +149,9 @@ export interface RoomConfig {
         enabled: boolean;
         terminalConfigs: TerminalConfig[];
     };
+
+    // Lab配置
+    labConfig?: LabConfig;
 
     // 特殊配置
     specialConfig: {

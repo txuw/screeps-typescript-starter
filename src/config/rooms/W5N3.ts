@@ -48,7 +48,7 @@ const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.UPGRADER,
     body: [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY, WORK,CARRY, WORK,CARRY, WORK, WORK, WORK, WORK, WORK, WORK],
-    maxCount: 5,
+    maxCount: 2,
     priority: 3,
     needLength: 9,
   },
@@ -69,7 +69,7 @@ const W5N3_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.MINER,
     body: MineralUtils.generateMinerBody(),
-    maxCount: 0,
+    maxCount: 1,
     priority: 5, // Upgrader之后，StorageCarry之前
     needLength: 1,
     storagePriority: GLOBAL_ALGORITHM_CONFIG.MINER_CONFIG.STORAGE_PRIORITY,

@@ -10,6 +10,7 @@ export const ROLE_NAMES = {
     STORAGE_CARRY: 'storageCarry',
     LINK_CARRY: 'linkCarry',
     TERMINAL_CARRY: 'terminalCarry',
+    LAB_CARRY: 'labCarry',
     CLAIMER: 'claimer',
     MINER: 'miner',
     CROSS_ROOM_BUILDER: 'crossRoomBuilder',
