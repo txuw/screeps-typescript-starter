@@ -5,6 +5,7 @@ import { W1N1_CONFIG } from './rooms/W1N1';
 import { W2N1_CONFIG } from './rooms/W2N1';
 import { W2N2_CONFIG } from './rooms/W2N2';
 import { W5N3_CONFIG } from './rooms/W5N3';
+import { W1N4_CONFIG } from './rooms/W1N4';
 import { RoomState } from '../types/RoomState';
 
 /**
@@ -101,6 +102,7 @@ export class ConfigLoader {
         this.configCache.set('W2N1', W2N1_CONFIG);
         this.configCache.set('W2N2', W2N2_CONFIG);
         this.configCache.set('W5N3', W5N3_CONFIG);
+        this.configCache.set('W1N4', W1N4_CONFIG);
 
         // 预加载内存中保存的配置
         this.loadConfigsFromMemory();
@@ -122,6 +124,8 @@ export class ConfigLoader {
               return  W2N2_CONFIG;
             case 'W5N3':
               return  W5N3_CONFIG;
+            case 'W1N4':
+              return  W1N4_CONFIG;
             // 可以添加更多房间的配置
             default:
                 return null;
@@ -134,7 +138,7 @@ export class ConfigLoader {
     private hasSpecificRoomConfig(roomName: string): boolean {
         // 检查是否有对应的配置文件
         // 在实际环境中，可以检查文件系统或其他配置源
-        return roomName === 'W1N1' || roomName === 'W2N1' || roomName === 'W2N2' || roomName === 'W5N3'; // 目前只有W1N1有特定配置
+        return roomName === 'W1N1' || roomName === 'W2N1' || roomName === 'W2N2' || roomName === 'W5N3' || roomName === 'W1N4'; // 目前只有W1N1有特定配置
     }
 
     /**

@@ -78,15 +78,15 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
       role: ROLE_NAMES.CROSS_ROOM_BUILDER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomBuilderBody动态生成
-      maxCount: 0, // 默认关闭，按需配置
-      priority: 3, // 较高优先级
+      maxCount: 2, // 默认关闭，按需配置
+      priority: 1, // 较高优先级
       needLength: 2,
     },
     // 跨房间升级者
     {
       role: ROLE_NAMES.CROSS_ROOM_UPGRADER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomUpgraderBody动态生成
-      maxCount: 0, // 默认关闭，按需配置
+      maxCount: 1, // 默认关闭，按需配置
       priority: 2, // 较高优先级
       needLength: 1,
     },
@@ -115,7 +115,7 @@ const w1n1Config = createRoomConfig('W1N1', {
     // 覆盖creep生产配置以匹配原有行为
     creepProduction: {
         enabled: true,
-        maxTotalCreeps: 20,
+        maxTotalCreeps: 30,
         productionPriority: 1,
         stateBasedConfigs: {
             [RoomState.NORMAL]: {
@@ -220,11 +220,11 @@ const w1n1Config = createRoomConfig('W1N1', {
     crossRoomConfig: {
         allowCreepSharing: true,
         sharingPriority: 1,
-        maxSharedCreeps: 3,
+        maxSharedCreeps: 4,
         claimTargets: [
             {
-                roomName: 'W5N3',
-                x: 39,
+                roomName: 'W1N4',
+                x: 28,
                 y: 7,
                 priority: 1,
                 claimed: false,
@@ -235,7 +235,7 @@ const w1n1Config = createRoomConfig('W1N1', {
         // 跨房间建造配置
         buildTargets: [
           {
-            roomName: 'W5N3',
+            roomName: 'W1N4',
             priority: 1,
             requiredStructures: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTAINER],
             status: 'pending',
@@ -244,7 +244,7 @@ const w1n1Config = createRoomConfig('W1N1', {
         ], // 将在具体房间配置中设置建造目标
         upgradeTargets: [
           {
-            roomName: 'W5N3',
+            roomName: 'W1N4',
             priority: 1,
             targetRCL: 4,
             currentRCL: 1,
@@ -255,8 +255,8 @@ const w1n1Config = createRoomConfig('W1N1', {
         ], // 将在具体房间配置中设置升级目标
 
         // 跨房间creep配置
-        maxCrossRoomBuilders: 0,
-        maxCrossRoomUpgraders: 0,
+        maxCrossRoomBuilders: 2,
+        maxCrossRoomUpgraders: 1,
         crossRoomEnabled: true,
         minEnergyForCrossRoom: 1000,
 
