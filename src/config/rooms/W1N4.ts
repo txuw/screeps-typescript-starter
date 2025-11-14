@@ -13,7 +13,7 @@ const W1N4_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.HARVESTER,
     body: [MOVE,MOVE,CARRY,WORK],
-    maxCount: 4,
+    maxCount: 2,
     priority: 0,
     needLength: 2,
   },
@@ -41,7 +41,7 @@ const W1N4_CREEP_CONFIGS: CreepConfig[] = [
   {
     role: ROLE_NAMES.CARRY,
     body: [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY],
-    maxCount: 1,
+    maxCount: 0,
     priority: 0, // 调整优先级，作为基础容错搬运
     needLength: 3,
   },
@@ -54,7 +54,7 @@ const W1N4_CREEP_CONFIGS: CreepConfig[] = [
   },
   {
     role: ROLE_NAMES.BUILDER,
-    body: [MOVE, CARRY, MOVE, CARRY, MOVE, CARRY],
+    body: [MOVE,MOVE,CARRY,WORK],
     maxCount: 0,
     priority: 7, // 调整优先级，在Miner和StorageCarry之后
     needLength: 2,
