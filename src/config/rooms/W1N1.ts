@@ -48,7 +48,7 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
         role: ROLE_NAMES.UPGRADER,
         body: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,  WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
-        maxCount: 2,
+        maxCount: 1,
         priority: 4,
         needLength: 1,
     },
@@ -78,17 +78,17 @@ const W1N1_CREEP_CONFIGS: CreepConfig[] = [
     {
       role: ROLE_NAMES.CROSS_ROOM_BUILDER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomBuilderBody动态生成
-      maxCount: 2, // 默认关闭，按需配置
+      maxCount: 0, // 默认关闭，按需配置
       priority: 1, // 较高优先级
-      needLength: 2,
+      needLength: 0,
     },
     // 跨房间升级者
     {
       role: ROLE_NAMES.CROSS_ROOM_UPGRADER,
       body: [], // 将由CrossRoomUtils.generateCrossRoomUpgraderBody动态生成
-      maxCount: 1, // 默认关闭，按需配置
+      maxCount: 0, // 默认关闭，按需配置
       priority: 2, // 较高优先级
-      needLength: 1,
+      needLength: 0,
     },
     // Terminal搬运者
     {
@@ -255,8 +255,8 @@ const w1n1Config = createRoomConfig('W1N1', {
         ], // 将在具体房间配置中设置升级目标
 
         // 跨房间creep配置
-        maxCrossRoomBuilders: 2,
-        maxCrossRoomUpgraders: 1,
+        maxCrossRoomBuilders: 0,
+        maxCrossRoomUpgraders: 0,
         crossRoomEnabled: true,
         minEnergyForCrossRoom: 1000,
 
